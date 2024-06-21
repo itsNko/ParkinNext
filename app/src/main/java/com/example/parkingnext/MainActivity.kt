@@ -5,6 +5,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -12,17 +15,21 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
-import androidx.compose.material3.Surface
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -43,21 +50,83 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ParkingNextApp(modifier: Modifier = Modifier.fillMaxSize()) {
+fun ParkingNextApp(modifier: Modifier = Modifier
+    .safeDrawingPadding()
+    .padding(30.dp)) {
     val dao: DAO = DummyDAO()
     var slots = dao.getSlots(dao.getSectors(dao.getFloors()[0])[0])
-    Surface(
-        modifier = modifier.fillMaxSize()
+    Scaffold(
+        topBar = {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Box(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Button(
+                        onClick = {}
+                    ) {
+                        Text(text = "<")
+                    }
+                }
+
+                Text("Parking Slots",
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.weight(1f))
+
+                Text("8/17",
+                    textAlign = TextAlign.Right,
+                    modifier = Modifier.weight(1f))
+            }
+        },
+        bottomBar = {
+            Row() {
+                Button(onClick = {}) {
+                    Text("< Go back")
+                }
+                Button(onClick = {}) {
+                    Text("Next >")
+                }
+            }
+        },
+        modifier = modifier
     ) {
-        SlotList2(slots)
+        SlotSearcher(slots, Modifier.padding(it))
     }
 }
 
 @Composable
-fun SlotList2(slots: List<Slot>) {
+fun SlotSearcher(slots: List<Slot>,
+                 modifier: Modifier = Modifier) {
     Column(
-        modifier = Modifier.padding(8.dp)
+        modifier = modifier
+    ) {
+        Row() {
+            Text("ToDelete")
+        }
+        SlotList(slots,
+            modifier = Modifier.weight(1.0f))
+        Row() {
+            Button(onClick = {}) {
+                Text("<")
+            }
+            Text("Move Sector")
+            Button(onClick = {}) {
+                Text(">")
+            }
+        }
+    }
+}
+
+@Composable
+fun SlotList(
+    slots: List<Slot>,
+    modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier.padding(8.dp)
     ) {
         GradientDivider(
             colors = listOf(Color.Transparent, Color.Gray, Color.Transparent),
@@ -69,7 +138,8 @@ fun SlotList2(slots: List<Slot>) {
                     onClick = {}
                     , modifier = Modifier
                         .fillMaxSize()
-                        .weight(1f).padding(8.dp)
+                        .weight(1f)
+                        .padding(8.dp)
                 ) {
                     Text(
                         text = slots[rowIndex * 2].number.toString()
@@ -85,14 +155,18 @@ fun SlotList2(slots: List<Slot>) {
                     onClick = {},
                     modifier = Modifier
                         .weight(1f)
-                        .fillMaxSize().padding(8.dp)
+                        .fillMaxSize()
+                        .padding(8.dp)
                 ) {
                     Text(
                         text = slots[rowIndex * 2 + 1].number.toString()
                     )
                 }
             }
-            Divider()
+            GradientDivider(
+                colors = listOf(Color.Transparent, Color.Gray, Color.Transparent),
+                thickness = 1.dp
+            )
         }
     }
 }
