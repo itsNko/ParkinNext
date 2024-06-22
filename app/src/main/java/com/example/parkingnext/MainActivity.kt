@@ -51,6 +51,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.painterResource
+import com.example.parkingnext.ui.ParkingSlots
 
 
 class MainActivity : ComponentActivity() {
@@ -67,6 +68,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun ParkingNextApp() {
+    ParkingSlots({})
 }
 
 @Preview(showBackground = true)

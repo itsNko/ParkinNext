@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Parking Next</string>
+    <string name="back">Go back</string>
+    <string name="parking_slots">Parking Slots</string>
 </resources>
