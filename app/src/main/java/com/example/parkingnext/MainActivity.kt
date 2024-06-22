@@ -37,6 +37,21 @@ import com.example.parkingnext.data.DAO
 import com.example.parkingnext.data.DummyDAO
 import com.example.parkingnext.model.Slot
 import com.example.parkingnext.ui.theme.ParkingNextTheme
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.painterResource
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,151 +65,8 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ParkingNextApp(modifier: Modifier = Modifier
-    .safeDrawingPadding()
-    .padding(30.dp)) {
-    val dao: DAO = DummyDAO()
-    var slots = dao.getSlots(dao.getSectors(dao.getFloors()[0])[0])
-    Scaffold(
-        topBar = {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Box(
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Button(
-                        onClick = {}
-                    ) {
-                        Text(text = "<")
-                    }
-                }
-
-                Text("Parking Slots",
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.weight(1f))
-
-                Text("8/17",
-                    textAlign = TextAlign.Right,
-                    modifier = Modifier.weight(1f))
-            }
-        },
-        bottomBar = {
-            Row() {
-                Button(onClick = {}) {
-                    Text("< Go back")
-                }
-                Button(onClick = {}) {
-                    Text("Next >")
-                }
-            }
-        },
-        modifier = modifier
-    ) {
-        SlotSearcher(slots, Modifier.padding(it))
-    }
-}
-
-@Composable
-fun SlotSearcher(slots: List<Slot>,
-                 modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier
-    ) {
-        Row() {
-            Text("ToDelete")
-        }
-        SlotList(slots,
-            modifier = Modifier.weight(1.0f))
-        Row() {
-            Button(onClick = {}) {
-                Text("<")
-            }
-            Text("Move Sector")
-            Button(onClick = {}) {
-                Text(">")
-            }
-        }
-    }
-}
-
-@Composable
-fun SlotList(
-    slots: List<Slot>,
-    modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier.padding(8.dp)
-    ) {
-        GradientDivider(
-            colors = listOf(Color.Transparent, Color.Gray, Color.Transparent),
-            thickness = 1.dp
-        )
-        repeat(slots.size / 2) {rowIndex ->
-            Row (modifier = Modifier.weight(1f)){
-                Button(
-                    onClick = {}
-                    , modifier = Modifier
-                        .fillMaxSize()
-                        .weight(1f)
-                        .padding(8.dp)
-                ) {
-                    Text(
-                        text = slots[rowIndex * 2].number.toString()
-                    )
-                }
-                Divider(
-                    color = Color.Gray,
-                    modifier = Modifier
-                        .fillMaxHeight() //fill the max height
-                        .width(1.dp)
-                )
-                Button(
-                    onClick = {},
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxSize()
-                        .padding(8.dp)
-                ) {
-                    Text(
-                        text = slots[rowIndex * 2 + 1].number.toString()
-                    )
-                }
-            }
-            GradientDivider(
-                colors = listOf(Color.Transparent, Color.Gray, Color.Transparent),
-                thickness = 1.dp
-            )
-        }
-    }
-}
-
-
-@Composable
-fun GradientDivider(
-    colors: List<Color>,
-    modifier: Modifier = Modifier,
-    thickness: Dp = 1.dp,
-) {
-    Canvas(
-        modifier = modifier
-            .height(thickness)
-            .fillMaxWidth()
-    ) {
-        val gradient = Brush.horizontalGradient(
-            colors = colors,
-            startX = 0f,
-            endX = size.width
-        )
-
-        drawRect(
-            brush = gradient,
-            topLeft = Offset(0f, 0f),
-            size = Size(size.width, size.height)
-        )
-    }
+fun ParkingNextApp() {
 }
 
 @Preview(showBackground = true)
