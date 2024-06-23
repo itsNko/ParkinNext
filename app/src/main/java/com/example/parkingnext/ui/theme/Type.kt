@@ -7,10 +7,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.example.parkingnext.R
 import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.unit.dp
 
 
 val Poppins = FontFamily(
-    Font(R.font.poppins_regular),
+    Font(R.font.poppins_regular, FontWeight.Normal),
     Font(R.font.poppins_medium, FontWeight.Medium),
     Font(R.font.poppins_semibold, FontWeight.SemiBold)
 )
@@ -34,6 +35,6 @@ val Typography = Typography(
     bodyLarge = TextStyle(
         fontFamily = Poppins,
         fontWeight = FontWeight.Normal,
-        fontSize = 10.sp
+        fontSize = 12.sp
     )
 )

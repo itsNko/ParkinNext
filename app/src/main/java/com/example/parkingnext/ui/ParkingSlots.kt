@@ -13,45 +13,54 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIos
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.ArrowDropUp
+import androidx.compose.material.icons.filled.ArrowForwardIos
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.parkingnext.R
 import com.example.parkingnext.data.DAO
 import com.example.parkingnext.data.DummyDAO
 import com.example.parkingnext.model.Slot
 import com.example.parkingnext.ui.theme.ParkingNextTheme
-import androidx.compose.foundation.layout.size
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.unit.sp
 
 @Composable
 fun ParkingSlots(
@@ -59,9 +68,9 @@ fun ParkingSlots(
     modifier: Modifier = Modifier
         .safeDrawingPadding()
         .padding(
-            top = 0.dp,
+            top = 20.dp,
+            bottom = 20.dp,
             start = 30.dp,
-            bottom = 30.dp,
             end = 30.dp
         )
 ) {
@@ -71,7 +80,7 @@ fun ParkingSlots(
     var availableSectorAmount = 8
     Scaffold(
         topBar = { ParkingSlotsTopBar(backButtonOnClick, sectorAmount, availableSectorAmount) },
-        bottomBar = { ParkingSlotsBottomBar() },
+        bottomBar = { ParkingSlotsBottomBar({}, {}) },
         modifier = modifier
     ) {
         SlotSearcher(slots, Modifier.padding(it))
@@ -93,12 +102,13 @@ fun ParkingSlotsTopBar(
         ) {
             Button(
                 onClick = backButtonOnClick,
-                colors = ButtonDefaults.buttonColors(Color.Transparent)
+                colors = ButtonDefaults.buttonColors(Color.Transparent),
+                modifier = Modifier.align(Alignment.CenterStart)
             ) {
                 Icon(
                     imageVector = Icons.Filled.ArrowBackIos,
                     contentDescription = stringResource(id = R.string.back),
-                    tint = Color.Black
+                    tint = Color.Black,
                 )
             }
         }
@@ -111,10 +121,10 @@ fun ParkingSlotsTopBar(
 
         Text(
             text = buildAnnotatedString {
-                withStyle(style = SpanStyle(fontWeight = MaterialTheme.typography.displayMedium.fontWeight)) {
+                withStyle(style = SpanStyle(fontWeight = MaterialTheme.typography.displayMedium.fontWeight, fontSize = 16.sp)) {
                     append(availableSectorAmount.toString())
                 }
-                withStyle(style = SpanStyle(color = Color.Gray)) {
+                withStyle(style = SpanStyle(color = Color.Gray, fontSize = 16.sp)) {
                     append(" / " + sectorAmount.toString())
                 }
             },
@@ -125,13 +135,41 @@ fun ParkingSlotsTopBar(
 }
 
 @Composable
-fun ParkingSlotsBottomBar() {
-    Row() {
-        Button(onClick = {}) {
-            Text("< Go back")
+fun ParkingSlotsBottomBar(
+    goBackOnClick: () -> Unit,
+    nextOnClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Button(
+            onClick = goBackOnClick,
+            colors = ButtonDefaults.buttonColors(Color.Transparent),
+            shape = RoundedCornerShape(20),
+            modifier = Modifier.align(Alignment.CenterStart)
+        ) {
+            Text(
+                text = stringResource(id = R.string.back_btn),
+                fontWeight = FontWeight.Normal,
+                fontFamily = MaterialTheme.typography.displayLarge.fontFamily,
+                color = Color.Black,
+                modifier = Modifier.padding(top = 2.dp)
+            )
         }
-        Button(onClick = {}) {
-            Text("Next >")
+
+        Button(
+            onClick = nextOnClick,
+            colors = ButtonDefaults.buttonColors(colorResource(id = R.color.DarkerOrange)),
+            shape = RoundedCornerShape(20),
+            modifier = Modifier.align(Alignment.CenterEnd)
+        ) {
+            Text(
+                text = stringResource(id = R.string.next_btn),
+                fontWeight = FontWeight.SemiBold,
+                fontFamily = MaterialTheme.typography.displayLarge.fontFamily,
+                color = colorResource(id = R.color.DarkGray),
+                modifier = Modifier.padding(top = 2.dp)
+            )
         }
     }
 }
@@ -147,7 +185,9 @@ fun SlotSearcher(
         SectorAndFloorDropdown(Modifier.padding(top = 10.dp, bottom = 10.dp))
         SlotList(slots,
             modifier = Modifier.weight(1.0f))
+        Spacer(modifier = Modifier.size(15.dp))
         SectorBrowser()
+        Spacer(modifier = Modifier.size(15.dp))
     }
 }
 
@@ -165,52 +205,87 @@ fun SectorAndFloorDropdown(modifier: Modifier = Modifier) {
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxSize()
         ) {
-            Button(
-                onClick = {},
-                shape = RoundedCornerShape(20),
-                colors = ButtonDefaults.buttonColors(Color.Transparent),
-                modifier = Modifier.weight(1f).padding(2.dp)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier.fillMaxSize()
+            SlotDropDownMenu(
+                Modifier
+                    .weight(1f)
+                    .fillMaxSize(), Color.Transparent)
+            SlotDropDownMenu(
+                Modifier
+                    .weight(1f)
+                    .fillMaxSize(),
+                colorResource(id = R.color.MainOrange))
+        }
+    }
+}
+
+@Composable
+fun SlotDropDownMenu(
+    modifier: Modifier,
+    buttonBackgroundColor: Color
+) {
+    var isExpanded by remember { mutableStateOf(false) }
+    val icon = if (isExpanded) {
+        Icons.Filled.ArrowDropUp
+    } else {
+        Icons.Filled.ArrowDropDown
+    }
+
+    Button(
+        onClick = {
+                  isExpanded = !isExpanded
+        },
+        colors = ButtonDefaults.buttonColors(buttonBackgroundColor),
+        shape = RoundedCornerShape(20),
+        modifier = modifier
+            .fillMaxSize()
+            .padding(2.dp)
+    ) {
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Text(
+                text = "Sector: 1/3",
+                fontWeight = FontWeight.Normal,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.align(Alignment.Center)
+            )
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(20.dp)
+                    .align(Alignment.CenterEnd)
+            )
+        }
+    }
+
+    DropdownMenu(
+        expanded = isExpanded,
+        onDismissRequest = { isExpanded = false},
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column (
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxWidth()
+        )
+        {
+            DropdownMenuItem(
+                text = { Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = "Sector: 1/3",
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxSize().padding(end = 10.dp).weight(1f)
-                    )
-                    Icon(
-                        imageVector = Icons.Filled.ArrowDropDown,
-                        contentDescription = null,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-            }
-            Button(
-                onClick = {},
-                colors = ButtonDefaults.buttonColors(colorResource(id = R.color.MainOrange)),
-                shape = RoundedCornerShape(20),
-                modifier = Modifier.weight(1f).padding(2.dp)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = "Floor: 1",
-                        style = TextStyle(fontSize = 14.sp),
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(end = 5.dp).weight(1f)
-                    )
-                    Icon(
-                        imageVector = Icons.Filled.ArrowDropDown,
-                        contentDescription = null,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-            }
+                    Text("Sector 1")
+                } },
+                onClick = { /* Handle click */ },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.CenterHorizontally)
+            )
+            Divider()
+            DropdownMenuItem(
+                text = { Text("Sector 2") },
+                onClick = { /* Handle click */ }
+            )
         }
     }
 }
@@ -228,7 +303,7 @@ fun SlotList(
         )
         repeat(slots.size / 2) { rowIndex ->
             Row(modifier = Modifier.weight(1f)) {
-                Button(
+                /*Button(
                     onClick = {}, modifier = Modifier
                         .fillMaxSize()
                         .weight(1f)
@@ -237,6 +312,20 @@ fun SlotList(
                     Text(
                         text = slots[rowIndex * 2].number.toString()
                     )
+                }*/
+                Surface(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxSize()
+                        .padding(4.dp),
+                    onClick = {}
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.car_r),
+                        contentDescription = null,
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier.fillMaxSize()
+                    )
                 }
                 Divider(
                     color = Color.Gray,
@@ -244,17 +333,17 @@ fun SlotList(
                         .fillMaxHeight() //fill the max height
                         .width(1.dp)
                 )
-                Button(
-                    onClick = {},
-                    colors = ButtonDefaults.buttonColors(Color.Transparent),
+                Surface(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxSize()
-                        .padding(8.dp)
+                        .padding(4.dp),
+                    onClick = {}
                 ) {
                     Image(
                         painter = painterResource(id = R.drawable.car_l),
                         contentDescription = null,
+                        contentScale = ContentScale.Fit,
                         modifier = Modifier.fillMaxSize()
                     )
                 }
@@ -277,12 +366,31 @@ fun SectorBrowser(
         horizontalArrangement = Arrangement.Center,
         modifier = Modifier.fillMaxWidth()
     ) {
-        Button(onClick = sectorLeftOnClick) {
-            Text("<")
+        Button(
+            onClick = sectorLeftOnClick,
+            colors = ButtonDefaults.buttonColors(Color.Transparent)
+        ) {
+            Icon(
+                imageVector = Icons.Filled.ArrowBackIos,
+                contentDescription = stringResource(id = R.string.back),
+                tint = Color.Black,
+                modifier = Modifier.size(30.dp)
+            )
         }
-        Text("Move Sector")
-        Button(onClick = sectorRightOnClick) {
-            Text(">")
+        Text(
+            text = stringResource(id = R.string.move_sector),
+            color = Color.Gray
+        )
+        Button(
+            onClick = sectorRightOnClick,
+            colors = ButtonDefaults.buttonColors(Color.Transparent)
+        ) {
+            Icon(
+                imageVector = Icons.Filled.ArrowForwardIos,
+                contentDescription = stringResource(id = R.string.back),
+                tint = Color.Black,
+                modifier = Modifier.size(30.dp)
+            )
         }
     }
 }
@@ -313,6 +421,9 @@ fun GradientDivider(
 }
 
 @Preview(showBackground = true)
+@Preview(name = "Standar", device = Devices.NEXUS_6P, showBackground = true, showSystemUi = false)
+@Preview(name = "Small", device = Devices.PIXEL_4, showBackground = true, showSystemUi = false)
+@Preview(name = "narrow", device = Devices.PIXEL_3, showBackground = true )
 @Composable
 fun GreetingPreview() {
     ParkingNextTheme {
