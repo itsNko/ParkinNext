@@ -1,9 +1,12 @@
 <resources>
     <string name="app_name">Parking Next</string>
+    <string name="app_description">Reserve a parking spot easily, with comfort,\nreachability and security.</string>
     <string name="back">Go back</string>
     <string name="forward">Go forward</string>
     <string name="parking_slots">Parking Slots</string>
     <string name="move_sector">Move Sector</string>
     <string name="back_btn">&lt; Go back</string>
     <string name="next_btn">Next &gt;</string>
+    <string name="login">Login</string>
+    <string name="register">Register</string>
 </resources>
