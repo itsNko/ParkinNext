@@ -9,4 +9,15 @@
     <string name="next_btn">Next &gt;</string>
     <string name="login">Login</string>
     <string name="register">Register</string>
+    <string name="login_title">Login here</string>
+    <string name="login_msg">Welcome back, you\'ve\nbeen missed!</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="forgot_password">Forgot your password?</string>
+    <string name="sign_in">Sign in</string>
+    <string name="new_account">Create new account</string>
+    <string name="oauth">Or continue with</string>
+    <string name="login_google">Login with Google account.</string>
+    <string name="login_facebook">Login with Facebook account.</string>
+    <string name="login_apple">Login with Apple account.</string>
 </resources>

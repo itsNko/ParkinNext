@@ -11,4 +11,5 @@
     <color name="MainOrange">#FF7A00</color>
     <color name="LighterOrange">#DA5D03</color>
     <color name="DarkerOrange">#DA8403</color>
+    <color name="LightBlue">#e6ebff</color>
 </resources>
