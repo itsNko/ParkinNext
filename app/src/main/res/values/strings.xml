@@ -20,4 +20,7 @@
     <string name="login_google">Login with Google account.</string>
     <string name="login_facebook">Login with Facebook account.</string>
     <string name="login_apple">Login with Apple account.</string>
+    <string name="space_reserve">Space Reserve</string>
+    <string name="reserve_slot">Reserve Slot</string>
+    <string name="beginning_day">Select beginning day:</string>
 </resources>

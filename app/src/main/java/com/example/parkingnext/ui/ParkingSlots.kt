@@ -137,10 +137,11 @@ fun ParkingSlotsTopBar(
 @Composable
 fun ParkingSlotsBottomBar(
     goBackOnClick: () -> Unit,
-    nextOnClick: () -> Unit
+    nextOnClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Box(
-        modifier = Modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth()
     ) {
         Button(
             onClick = goBackOnClick,
