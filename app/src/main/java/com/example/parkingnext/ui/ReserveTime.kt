@@ -56,6 +56,7 @@ import com.example.parkingnext.ui.theme.ParkingNextTheme
 @Composable
 fun ReserveTime(
     backButtonOnClick: () -> Unit,
+    nextButtonOnClick: () -> Unit,
     modifier: Modifier = Modifier
         .safeDrawingPadding()
         .padding(
@@ -66,8 +67,11 @@ fun ReserveTime(
         )
 ) {
     Scaffold(
-        topBar = { ReserveTimeTopBar({}) },
-        bottomBar = { ParkingSlotsBottomBar({}, {}) },
+        topBar = { ReserveTimeTopBar(backButtonOnClick) },
+        bottomBar = { ParkingSlotsBottomBar(
+            goBackOnClick = backButtonOnClick,
+            nextOnClick = nextButtonOnClick
+        ) },
         modifier = modifier
     ) {
         ReserveTimeBody(Modifier.padding(it))
@@ -282,10 +286,10 @@ fun TimeCard(
 @Preview(showBackground = true)
 //@Preview(widthDp = 1000, heightDp = 1000, showBackground = true)
 //@Preview(widthDp = 1920, heightDp = 1080, showBackground = true)
-@Preview(device = Devices.PIXEL_3, showBackground = true)
+//@Preview(device = Devices.PIXEL_3, showBackground = true)
 @Composable
 fun ReserveTimePreview() {
     ParkingNextTheme {
-        ReserveTime({})
+        ReserveTime({}, {})
     }
 }

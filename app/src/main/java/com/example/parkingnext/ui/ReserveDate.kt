@@ -42,6 +42,7 @@ import com.example.parkingnext.ui.theme.ParkingNextTheme
 @Composable
 fun ReserveDate(
     backButtonOnClick: () -> Unit,
+    nextButtonOnClick: () -> Unit,
     modifier: Modifier = Modifier
         .safeDrawingPadding()
         .padding(
@@ -51,7 +52,11 @@ fun ReserveDate(
 ) {
     Scaffold(
         topBar = { ReserveDateTopBar(backButtonOnClick) },
-        bottomBar = { ParkingSlotsBottomBar({}, {}, Modifier.padding(start = 30.dp, end = 30.dp)) },
+        bottomBar = { ParkingSlotsBottomBar(
+            nextOnClick = nextButtonOnClick,
+            goBackOnClick = backButtonOnClick,
+            modifier = Modifier.padding(start = 30.dp, end = 30.dp)
+        )},
         modifier = modifier
     ) {
         ReserveDatePicker(Modifier.padding(it))
@@ -147,6 +152,6 @@ fun ReserveDatePicker(modifier: Modifier = Modifier) {
 @Composable
 fun ReserveDatePreview() {
     ParkingNextTheme {
-        ReserveDate({})
+        ReserveDate({}, {})
     }
 }

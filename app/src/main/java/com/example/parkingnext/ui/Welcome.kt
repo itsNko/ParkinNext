@@ -29,7 +29,10 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.style.TextAlign
 
 @Composable
-fun Welcome() {
+fun Welcome(
+    registerButtonOnClick: () -> Unit,
+    loginButtonOnClick: () -> Unit
+) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -69,7 +72,7 @@ fun Welcome() {
                 .align(Alignment.BottomCenter)
         ) {
             Button(
-                onClick = {},
+                onClick = loginButtonOnClick,
                 shape = RoundedCornerShape(20),
                 colors = ButtonDefaults.buttonColors(colorResource(id = R.color.MainOrange)),
                 modifier = Modifier.size(width = 120.dp, height = 45.dp)
@@ -77,12 +80,12 @@ fun Welcome() {
                 Text(
                     text = stringResource(id = R.string.login),
                     style = MaterialTheme.typography.displayLarge,
-                    modifier = Modifier.padding(top = 2.dp)
+                    modifier = Modifier.padding(top = 1.dp)
                 )
             }
             Spacer(modifier = Modifier.size(50.dp))
             Button(
-                onClick = {},
+                onClick = registerButtonOnClick,
                 colors = ButtonDefaults.buttonColors(Color.Transparent),
                 shape = RoundedCornerShape(20),
                 modifier = Modifier.size(width = 120.dp, height = 45.dp)
@@ -91,7 +94,7 @@ fun Welcome() {
                     text = stringResource(id = R.string.register),
                     style = MaterialTheme.typography.displayLarge,
                     color = Color.Black,
-                    modifier = Modifier.padding(top = 2.dp)
+                    modifier = Modifier.padding(top = 1.dp)
                 )
             }
         }
@@ -104,6 +107,6 @@ fun Welcome() {
 @Composable
 fun WelcomePreview() {
     ParkingNextTheme {
-        Welcome()
+        Welcome({}, {})
     }
 }

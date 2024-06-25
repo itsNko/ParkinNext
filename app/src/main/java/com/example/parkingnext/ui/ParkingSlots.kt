@@ -65,6 +65,7 @@ import com.example.parkingnext.ui.theme.ParkingNextTheme
 @Composable
 fun ParkingSlots(
     backButtonOnClick: () -> Unit,
+    nextButtonOnClick: () -> Unit,
     modifier: Modifier = Modifier
         .safeDrawingPadding()
         .padding(
@@ -80,7 +81,10 @@ fun ParkingSlots(
     var availableSectorAmount = 8
     Scaffold(
         topBar = { ParkingSlotsTopBar(backButtonOnClick, sectorAmount, availableSectorAmount) },
-        bottomBar = { ParkingSlotsBottomBar({}, {}) },
+        bottomBar = { ParkingSlotsBottomBar(
+            goBackOnClick = backButtonOnClick,
+            nextOnClick = nextButtonOnClick
+        )},
         modifier = modifier
     ) {
         SlotSearcher(slots, Modifier.padding(it))
@@ -428,6 +432,6 @@ fun GradientDivider(
 @Composable
 fun GreetingPreview() {
     ParkingNextTheme {
-        ParkingSlots({})
+        ParkingSlots({},{})
     }
 }
