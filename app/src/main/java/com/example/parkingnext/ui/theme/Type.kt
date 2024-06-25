@@ -1,5 +1,6 @@
 package com.example.parkingnext.ui.theme
 
+import android.graphics.fonts.FontStyle
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -13,7 +14,8 @@ import androidx.compose.ui.unit.dp
 val Poppins = FontFamily(
     Font(R.font.poppins_regular, FontWeight.Normal),
     Font(R.font.poppins_medium, FontWeight.Medium),
-    Font(R.font.poppins_semibold, FontWeight.SemiBold)
+    Font(R.font.poppins_semibold, FontWeight.SemiBold),
+    Font(R.font.poppins_italic, FontWeight.Thin)
 )
 
 val Typography = Typography(

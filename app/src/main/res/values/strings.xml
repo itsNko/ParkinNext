@@ -23,4 +23,18 @@
     <string name="space_reserve">Space Reserve</string>
     <string name="reserve_slot">Reserve Slot</string>
     <string name="beginning_day">Select beginning day:</string>
+    <string name="beginning_time">Select beginning time:</string>
+    <string name="parking_time">Select parking time:</string>
+    <string name="pickup_time">Estimated pick-up time:</string>
+    <string name="day">Day</string>
+    <string name="time">Time</string>
+    <string name="add_car">Add Car</string>
+    <string name="model">Model:</string>
+    <string name="type">Type:</string>
+    <string name="license_plate">License Plate:</string>
+    <string name="car_selection">Select your car:</string>
+    <string name="standard">Standard</string>
+    <string name="electric_car">Electric</string>
+    <string name="special_car">Special</string>
+    <string name="edit_car">Edit car</string>
 </resources>

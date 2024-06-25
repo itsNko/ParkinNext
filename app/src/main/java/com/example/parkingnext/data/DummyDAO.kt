@@ -1,5 +1,6 @@
 package com.example.parkingnext.data
 
+import com.example.parkingnext.R
 import com.example.parkingnext.model.Car
 import com.example.parkingnext.model.ElectricCar
 import com.example.parkingnext.model.Floor
@@ -22,9 +23,9 @@ class DummyDAO : DAO {
 
     init {
         val cars : List<Car> = listOf(
-            StandardCar("123ABC"),
-            ElectricCar("234BCD"),
-            SpecialCar("345CDE")
+            StandardCar("Car1", "123ABC", "Seat Ibiza", R.color.PurpleCar, 4.3f),
+            ElectricCar("Car1", "123ABC", "Seat Ibiza", R.color.PurpleCar, 4.3f),
+            SpecialCar("Car1", "123ABC", "Seat Ibiza", R.color.PurpleCar, 4.3f)
         )
 
         currentUser = User("id1", "user1", "123", cars)

@@ -11,5 +11,11 @@
     <color name="MainOrange">#FF7A00</color>
     <color name="LighterOrange">#DA5D03</color>
     <color name="DarkerOrange">#DA8403</color>
-    <color name="LightBlue">#e6ebff</color>
+    <color name="LightBlue">#E6EBFF</color>
+    <color name="PaleOrange">#FFD7B3</color>
+    <color name="MediumGray">#7F7F7F</color>
+    <color name="LightGray">#BFBFBF</color>
+    <color name="GreenCar">#87E5A1</color>
+    <color name="PurpleCar">#AF87FF</color>
+    <color name="ElectriCar">#508D3B</color>
 </resources>

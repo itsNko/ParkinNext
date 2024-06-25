@@ -10,7 +10,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.parkingnext.ui.ParkingSlots
+import com.example.parkingnext.ui.ReserveCar
 import com.example.parkingnext.ui.ReserveDate
+import com.example.parkingnext.ui.ReserveTime
 import com.example.parkingnext.ui.theme.ParkingNextTheme
 
 
@@ -21,7 +23,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             ParkingNextTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    ReserveDate({})
+                    ReserveCar({}, {}, {})
                 }
             }
         }
@@ -37,6 +39,6 @@ fun ParkingNextApp() {
 @Composable
 fun GreetingPreview() {
     ParkingNextTheme {
-        ReserveDate({})
+        ReserveCar({}, {}, {})
     }
 }

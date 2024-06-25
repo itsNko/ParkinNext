@@ -1,4 +1,12 @@
 package com.example.parkingnext.model
 
-class SpecialCar(licenseNumber: String) : Car(licenseNumber) {
+class SpecialCar(carName: String,
+                 licenseNumber: String,
+                 carModel: String,
+                 carIconColor: Int,
+                 carScore: Float) : Car(carName,
+    licenseNumber,
+    carModel,
+    carIconColor,
+    carScore) {
 }

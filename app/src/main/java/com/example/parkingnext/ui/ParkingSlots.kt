@@ -422,9 +422,9 @@ fun GradientDivider(
 }
 
 @Preview(showBackground = true)
-@Preview(name = "Standar", device = Devices.NEXUS_6P, showBackground = true, showSystemUi = false)
-@Preview(name = "Small", device = Devices.PIXEL_4, showBackground = true, showSystemUi = false)
-@Preview(name = "narrow", device = Devices.PIXEL_3, showBackground = true )
+//@Preview(name = "Standar", device = Devices.NEXUS_6P, showBackground = true, showSystemUi = false)
+//@Preview(name = "Small", device = Devices.PIXEL_4, showBackground = true, showSystemUi = false)
+//@Preview(name = "narrow", device = Devices.PIXEL_3, showBackground = true )
 @Composable
 fun GreetingPreview() {
     ParkingNextTheme {

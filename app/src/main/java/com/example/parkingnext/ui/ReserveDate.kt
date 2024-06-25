@@ -37,8 +37,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.parkingnext.R
-import com.example.parkingnext.data.DAO
-import com.example.parkingnext.data.DummyDAO
 import com.example.parkingnext.ui.theme.ParkingNextTheme
 
 @Composable
@@ -51,12 +49,8 @@ fun ReserveDate(
             bottom = 20.dp
         )
 ) {
-    val dao: DAO = DummyDAO()
-    var slots = dao.getSlots(dao.getSectors(dao.getFloors()[0])[0])
-    var sectorAmount = 16
-    var availableSectorAmount = 8
     Scaffold(
-        topBar = { ReserveDatesTopBar(backButtonOnClick, sectorAmount, availableSectorAmount) },
+        topBar = { ReserveDateTopBar(backButtonOnClick) },
         bottomBar = { ParkingSlotsBottomBar({}, {}, Modifier.padding(start = 30.dp, end = 30.dp)) },
         modifier = modifier
     ) {
@@ -65,10 +59,8 @@ fun ReserveDate(
 }
 
 @Composable
-fun ReserveDatesTopBar(
-    backButtonOnClick: () -> Unit,
-    sectorAmount: Int,
-    availableSectorAmount: Int,
+fun ReserveDateTopBar(
+    backButtonOnClick: () -> Unit
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
