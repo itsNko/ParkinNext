@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIos
@@ -211,22 +213,28 @@ fun SectorAndFloorDropdown(modifier: Modifier = Modifier) {
             modifier = Modifier.fillMaxSize()
         ) {
             SlotDropDownMenu(
-                Modifier
-                    .weight(1f)
-                    .fillMaxSize(), Color.Transparent)
-            SlotDropDownMenu(
-                Modifier
+                list = viewModel.getFloors(),
+                buttonBackgroundColor = Color.Transparent,
+                modifier = Modifier
                     .weight(1f)
                     .fillMaxSize(),
-                colorResource(id = R.color.MainOrange))
+            )
+            SlotDropDownMenu(
+                list = viewModel.getSectors(),
+                buttonBackgroundColor = colorResource(id = R.color.MainOrange),
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxSize(),
+            )
         }
     }
 }
 
 @Composable
 fun SlotDropDownMenu(
-    modifier: Modifier,
-    buttonBackgroundColor: Color
+    list: List<kotlin.Any>,
+    buttonBackgroundColor: Color,
+    modifier: Modifier
 ) {
     var isExpanded by remember { mutableStateOf(false) }
     val icon = if (isExpanded) {
@@ -269,28 +277,26 @@ fun SlotDropDownMenu(
         onDismissRequest = { isExpanded = false},
         modifier = Modifier.fillMaxWidth()
     ) {
-        Column (
+        LazyColumn (
             verticalArrangement = Arrangement.Center,
             modifier = Modifier.fillMaxWidth()
         )
         {
-            DropdownMenuItem(
-                text = { Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("Sector 1")
-                } },
-                onClick = { /* Handle click */ },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.CenterHorizontally)
-            )
-            Divider()
-            DropdownMenuItem(
-                text = { Text("Sector 2") },
-                onClick = { /* Handle click */ }
-            )
+            items(list) {item ->
+                DropdownMenuItem(
+                    text = { Box(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text("Hello")
+                                } },
+                    onClick = { /* Handle click */ },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.CenterHorizontally)
+                )
+                Divider()
+            }
         }
     }
 }

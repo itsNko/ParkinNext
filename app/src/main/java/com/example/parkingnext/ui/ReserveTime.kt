@@ -1,5 +1,6 @@
 package com.example.parkingnext.ui
 
+import android.icu.util.Calendar
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -32,10 +33,7 @@ import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TimePickerDefaults
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -46,11 +44,11 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.parkingnext.R
+import com.example.parkingnext.model.ParkingTime
 import com.example.parkingnext.ui.theme.ParkingNextTheme
 
 @Composable
@@ -160,7 +158,13 @@ fun BeginningTimeSelector() {
         Surface(
             modifier = Modifier.fillMaxWidth()
         ) {
-            val state = rememberTimePickerState()
+            val currentTime = Calendar.getInstance().apply{ viewModel.getCurrentDate()}
+            val state = rememberTimePickerState(
+                initialHour = currentTime.get(Calendar.HOUR_OF_DAY),
+                initialMinute = currentTime.get(Calendar.MINUTE),
+                is24Hour = false
+            )
+
             TimePicker(
                 state = state,
                 colors = TimePickerDefaults.colors(
@@ -172,50 +176,41 @@ fun BeginningTimeSelector() {
                 ),
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
+
+            LaunchedEffect(state.hour) {
+                viewModel.selectedDay.set(Calendar.HOUR_OF_DAY, state.hour)
+            }
+            LaunchedEffect(state.minute) {
+                viewModel.selectedDay.set(Calendar.MINUTE, state.minute)
+            }
         }
     }
 }
 
 @Composable
 fun ParkingTimeSelector() {
-    val pair1 = Pair("15", "mins.")
-    val pair2 = Pair("30", "mins.")
-    val pair3 = Pair("1", "hour")
-    val pair4 = Pair("2", "hours")
-    val pair5 = Pair("3", "hours")
-    val pair6 = Pair("4", "hours")
-    val pair7 = Pair("5", "hours")
-    val pair8 = Pair("6", "hours")
-    val pair9 = Pair("7", "hours")
-    val pair10 = Pair("8", "hours")
-    val pair11 = Pair("9", "hours")
+    val listOfDurations = enumValues<ParkingTime>().toList()
 
-    // Create a list of pairs
-    val listOfPairs = listOf(pair1, pair2, pair3, pair4, pair5, pair6, pair7, pair8, pair9, pair10, pair11)
-    var selectedTime by remember {mutableStateOf(pair1)}
-
-    LazyRow(
-    ) {
-        items(listOfPairs) { time ->
-            if (selectedTime == time)
-                SelectedTimeCard(time) {
-                    selectedTime = time
+    LazyRow {
+        items(listOfDurations) { duration ->
+            if (viewModel.selectedDuration == duration)
+                SelectedTimeCard(duration) {
+                    viewModel.selectedDuration = duration
                 }
             else
-                UnselectedTimeCard(time) {
-                    selectedTime = time
+                UnselectedTimeCard(duration) {
+                    viewModel.selectedDuration = duration
                 }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UnselectedTimeCard(
-    time: Pair<String, String>,
+    duration: ParkingTime,
     onClick: () -> Unit
 ) {
-    TimeCard(time = time,
+    TimeCard(duration = duration,
         cardColor = Color.Transparent,
         onClick = onClick,
         textColor = colorResource(id = R.color.MediumGray),
@@ -225,10 +220,10 @@ fun UnselectedTimeCard(
 
 @Composable
 fun SelectedTimeCard(
-    time: Pair<String, String>,
+    duration: ParkingTime,
     onClick: () -> Unit
 ) {
-    TimeCard(time = time,
+    TimeCard(duration = duration,
         onClick = onClick,
         cardColor = colorResource(id = R.color.MainOrange),
         textColor = Color.White,
@@ -239,7 +234,7 @@ fun SelectedTimeCard(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimeCard(
-    time: Pair<String, String>,
+    duration: ParkingTime,
     cardColor: Color,
     textColor: Color,
     border: BorderStroke,
@@ -265,13 +260,13 @@ fun TimeCard(
                         fontSize = 30.sp
                     )
                     ) {
-                        append(time.first.toString())
+                        append(duration.time)
                     }
                     withStyle(style = SpanStyle(
                         fontWeight = FontWeight.Thin,
                         fontSize = 12.sp
                     )) {
-                        append("\n" + time.second.toString())
+                        append("\n" + duration.measure)
                     }
                 },
                 textAlign = TextAlign.Center,

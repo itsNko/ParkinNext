@@ -26,6 +26,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -53,7 +54,7 @@ fun ReserveDate(
     Scaffold(
         topBar = { ReserveDateTopBar(backButtonOnClick) },
         bottomBar = { ParkingSlotsBottomBar(
-            nextOnClick = nextButtonOnClick,
+            nextOnClick = nextButtonOnClick.apply {  },
             goBackOnClick = backButtonOnClick,
             modifier = Modifier.padding(start = 30.dp, end = 30.dp)
         )},
@@ -101,7 +102,6 @@ fun ReserveDateTopBar(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReserveDatePicker(modifier: Modifier = Modifier) {
-    val currentMilliseconds = System.currentTimeMillis()
     Column(
         modifier = modifier.fillMaxSize()
     ) {
@@ -125,9 +125,9 @@ fun ReserveDatePicker(modifier: Modifier = Modifier) {
             shape = RoundedCornerShape(5),
             modifier = Modifier.fillMaxWidth()
         ) {
-
+            viewModel.selectedDay = viewModel.getCurrentDate()
             val datePickerState = rememberDatePickerState(
-                initialSelectedDateMillis = currentMilliseconds
+                initialSelectedDateMillis = viewModel.getCurrentDate().timeInMillis
             )
             DatePicker(
                 state = datePickerState,
@@ -136,12 +136,18 @@ fun ReserveDatePicker(modifier: Modifier = Modifier) {
                     selectedDayContainerColor = colorResource(R.color.MainOrange)
                 ),
                 dateValidator = { pickerDateMillis ->
-                    val currentDay = Calendar.getInstance().apply {timeInMillis = currentMilliseconds}
+                    val currentDay = viewModel.getCurrentDate()
                     val pickerDay = Calendar.getInstance().apply {timeInMillis = pickerDateMillis}
                     pickerDay.get(Calendar.YEAR) >= currentDay.get(Calendar.YEAR) &&
                             pickerDay.get(Calendar.DAY_OF_YEAR) >=currentDay.get(Calendar.DAY_OF_YEAR)
                 }
             )
+
+            LaunchedEffect(datePickerState.selectedDateMillis) {
+                datePickerState.selectedDateMillis?.let { selectedMillis ->
+                    viewModel.selectedDay.setTimeInMillis(selectedMillis)
+                }
+            }
         }
     }
 }

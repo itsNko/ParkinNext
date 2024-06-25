@@ -5,8 +5,6 @@ import com.example.parkingnext.model.Car
 import com.example.parkingnext.model.ElectricCar
 import com.example.parkingnext.model.Floor
 import com.example.parkingnext.model.Parking
-import com.example.parkingnext.model.ParkingTime
-import com.example.parkingnext.model.Reservation
 import com.example.parkingnext.model.Sector
 import com.example.parkingnext.model.ShortTimeSlot
 import com.example.parkingnext.model.Slot
@@ -15,7 +13,7 @@ import com.example.parkingnext.model.SpecialSlot
 import com.example.parkingnext.model.StandardCar
 import com.example.parkingnext.model.StandardSlot
 import com.example.parkingnext.model.User
-import java.util.Date
+import android.icu.util.Calendar
 
 class DummyDAO : DAO {
     private val currentUser: User
@@ -70,5 +68,10 @@ class DummyDAO : DAO {
     }
     override fun getCarsOfUser(user: User): List<Car> {
         return currentUser.cars
+    }
+
+    override fun getCurrentDate(): Calendar {
+        val currentMilliseconds = System.currentTimeMillis()
+        return Calendar.getInstance().apply {timeInMillis = currentMilliseconds}
     }
 }

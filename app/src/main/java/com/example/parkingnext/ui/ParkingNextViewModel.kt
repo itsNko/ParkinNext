@@ -12,16 +12,26 @@ import com.example.parkingnext.model.exceptions.UserNotLoggedException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import android.icu.util.Calendar
+import com.example.parkingnext.model.Floor
+import com.example.parkingnext.model.ParkingTime
+import com.example.parkingnext.model.Sector
 
 class ParkingNextViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(ParkingNextUIState(""))
     val uiState: StateFlow<ParkingNextUIState> = _uiState.asStateFlow()
     private var currentUser: User? = null
     private val dao: DAO = DummyDAO()
-    var selectedCar: Car? by mutableStateOf<Car?>(null)
+    var selectedCar: Car? by mutableStateOf(null)
+    var selectedDay: Calendar by mutableStateOf(Calendar.getInstance())
+    var selectedDuration: ParkingTime by mutableStateOf(ParkingTime.MINUTES_15)
+    var selectedFloor: Floor? by mutableStateOf(null)
+    var selectedSector: Sector? by mutableStateOf(null)
 
     init {
         currentUser = dao.getUser("")
+        selectedFloor = dao.getFloors()[0]
+        selectedSector = dao.getSectors(selectedFloor!!)[0]
     }
 
     /**
@@ -32,5 +42,17 @@ class ParkingNextViewModel : ViewModel() {
         if (currentUser == null)
             throw UserNotLoggedException()
         return dao.getCarsOfUser(currentUser!!)
+    }
+
+    fun getCurrentDate(): Calendar {
+        return dao.getCurrentDate()
+    }
+
+    fun getFloors(): List<Floor> {
+        return dao.getFloors()
+    }
+
+    fun getSectors(): List<Sector> {
+        return dao.getSectors(selectedFloor!!)
     }
 }

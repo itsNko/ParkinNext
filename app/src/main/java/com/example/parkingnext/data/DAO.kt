@@ -2,12 +2,10 @@ package com.example.parkingnext.data
 
 import com.example.parkingnext.model.Car
 import com.example.parkingnext.model.Floor
-import com.example.parkingnext.model.ParkingTime
-import com.example.parkingnext.model.Reservation
 import com.example.parkingnext.model.Sector
 import com.example.parkingnext.model.Slot
 import com.example.parkingnext.model.User
-import java.util.Date
+import android.icu.util.Calendar
 
 interface DAO {
 
@@ -39,4 +37,9 @@ interface DAO {
      * @return A list of the cars registered by the user.
      */
     fun getCarsOfUser(user: User) : List<Car>
+
+    /**
+     * @return The current date of the parking
+     */
+    fun getCurrentDate(): Calendar
 }
