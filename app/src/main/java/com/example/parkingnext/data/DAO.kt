@@ -10,31 +10,33 @@ import com.example.parkingnext.model.User
 import java.util.Date
 
 interface DAO {
-    fun register(newUser: User): User
 
-    fun login(username: String, password: String): User
-
-    fun logout()
-
-    fun getCurrentUser(): User
-
-    fun reserve(slot: Slot, car: Car, beginTime: Date, parkingTime: ParkingTime)
-
-    fun getCarsOfUser() : List<Car>
-
+    /**
+     * @return Returns the floors of the parking.
+     */
     fun getFloors(): List<Floor>
 
+    /**
+     * @param floor The floor where to get the floors from.
+     * @return Returns the sectors of a given floor.
+     */
     fun getSectors(floor: Floor): List<Sector>
 
+    /**
+     * @param sector The sector where to get the slots from.
+     * @return Returns the slots of a given sector.
+     */
     fun getSlots(sector: Sector): List<Slot>
 
-    fun getNumberOfAvailableSlots(sector: Sector): Int
+    /**
+     * @param username The unique username of a user
+     * @return The user that corresponds to the username.
+     */
+    fun getUser(username: String): User
 
-    fun getAvailableParkingTimes(slot: Slot): List<ParkingTime>
-
-    fun addCar(car: Car) : Car
-
-    fun getCurrentReservations(): List<Reservation>
-
-    fun getReservationHistory(): List<Reservation>
+    /**
+     * @param user The user from which to get their cars from.
+     * @return A list of the cars registered by the user.
+     */
+    fun getCarsOfUser(user: User) : List<Car>
 }

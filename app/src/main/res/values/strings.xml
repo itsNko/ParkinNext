@@ -37,4 +37,7 @@
     <string name="electric_car">Electric</string>
     <string name="special_car">Special</string>
     <string name="edit_car">Edit car</string>
+    <string name="accept">Accept</string>
+    <string name="car_error_title">Select 1 car</string>
+    <string name="car_error_text">You must select 1 car to continue with your reserve.</string>
 </resources>

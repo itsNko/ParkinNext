@@ -5,9 +5,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.parkingnext.ui.ParkingSlots
 import com.example.parkingnext.ui.ReserveCar
@@ -17,8 +20,17 @@ import com.example.parkingnext.ui.theme.ParkingNextTheme
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.parkingnext.ui.ParkingNextViewModel
 import com.example.parkingnext.ui.Welcome
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.parkingnext.ui.AlertErrorDialog
 
+private lateinit var viewModel: ParkingNextViewModel
+private lateinit var alertIcon: ImageVector
+private lateinit var alertTitle: String
+private lateinit var alertText: String
+private lateinit var alertDismiss: () -> Unit
+private lateinit var alertAccept: () -> Unit
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,12 +51,14 @@ enum class ParkingNextScreen() {
     ReserveCar,
     ReserveDate,
     ReserveTime,
-    ParkingSlots
+    ParkingSlots,
+    Alert
 }
 
 @Composable
 fun ParkingNextApp() {
     val navController = rememberNavController()
+    viewModel = viewModel()
     NavHost(
         navController = navController,
         startDestination = ParkingNextScreen.Welcome.name
@@ -65,10 +79,19 @@ fun ParkingNextApp() {
                                     navController.navigateUp()
                 },
                 nextButtonOnClick = {
-                                    navController.navigate(ParkingNextScreen.ReserveDate.name)
+                    navController.navigate(ParkingNextScreen.ReserveDate.name)
                 },
                 addCarOnClick = {
-
+                    alertIcon = Icons.Filled.Warning
+                    alertTitle = "Function not yet implemented!"
+                    alertText = "Keep in touch with future updates!"
+                    alertDismiss = {
+                        navController.navigateUp()
+                    }
+                    alertAccept = {
+                        navController.navigateUp()
+                    }
+                    navController.navigate(ParkingNextScreen.Alert.name)
                 })
         }
         composable(route = ParkingNextScreen.ReserveDate.name) {
@@ -97,8 +120,16 @@ fun ParkingNextApp() {
                     navController.navigateUp()
                 },
                 nextButtonOnClick = {
-
                 }
+            )
+        }
+        composable(route = ParkingNextScreen.Alert.name) {
+            AlertErrorDialog(
+                icon = alertIcon,
+                title = alertTitle,
+                content = alertText,
+                onDismissRequest = alertDismiss,
+                acceptButtonOnClick = alertAccept
             )
         }
     }

@@ -18,14 +18,14 @@ import com.example.parkingnext.model.User
 import java.util.Date
 
 class DummyDAO : DAO {
-    private lateinit var currentUser: User
-    private lateinit var parking: Parking
+    private val currentUser: User
+    private val parking: Parking
 
     init {
         val cars : List<Car> = listOf(
-            StandardCar("Car1", "123ABC", "Seat Ibiza", R.color.PurpleCar, 4.3f),
-            ElectricCar("Car1", "123ABC", "Seat Ibiza", R.color.PurpleCar, 4.3f),
-            SpecialCar("Car1", "123ABC", "Seat Ibiza", R.color.PurpleCar, 4.3f)
+            StandardCar("Car1", "123ABC", "Seat Ibiza", R.color.GreenCar, 4.1f),
+            ElectricCar("Car2", "234BCD", "Tesla Model X", R.color.PurpleCar, 4.3f),
+            SpecialCar("Car3", "345CDE", "Audi A8", R.color.BlueCar, 4.3f)
         )
 
         currentUser = User("id1", "user1", "123", cars)
@@ -53,30 +53,6 @@ class DummyDAO : DAO {
         parking = Parking(listOf(floor, floor), listOf(currentUser))
     }
 
-    override fun register(newUser: User): User {
-        return newUser
-    }
-
-    override fun login(username: String, password: String): User {
-        return currentUser
-    }
-
-    override fun logout() {
-        TODO("Not yet implemented")
-    }
-
-    override fun getCurrentUser(): User {
-        return currentUser
-    }
-
-    override fun reserve(slot: Slot, car: Car, beginTime: Date, parkingTime: ParkingTime) {
-        TODO("Not yet implemented")
-    }
-
-    override fun getCarsOfUser(): List<Car> {
-        return currentUser.cars
-    }
-
     override fun getFloors(): List<Floor> {
         return parking.floors
     }
@@ -89,23 +65,10 @@ class DummyDAO : DAO {
         return sector.slots
     }
 
-    override fun getNumberOfAvailableSlots(sector: Sector): Int {
-        TODO("Not yet implemented")
+    override fun getUser(username: String): User {
+        return currentUser
     }
-
-    override fun getAvailableParkingTimes(slot: Slot): List<ParkingTime> {
-        TODO("Not yet implemented")
-    }
-
-    override fun addCar(car: Car): Car {
-        TODO("Not yet implemented")
-    }
-
-    override fun getCurrentReservations(): List<Reservation> {
-        TODO("Not yet implemented")
-    }
-
-    override fun getReservationHistory(): List<Reservation> {
-        TODO("Not yet implemented")
+    override fun getCarsOfUser(user: User): List<Car> {
+        return currentUser.cars
     }
 }

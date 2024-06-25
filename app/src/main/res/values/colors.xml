@@ -17,5 +17,6 @@
     <color name="LightGray">#BFBFBF</color>
     <color name="GreenCar">#87E5A1</color>
     <color name="PurpleCar">#AF87FF</color>
+    <color name="BlueCar">#87E1FF</color>
     <color name="ElectriCar">#508D3B</color>
 </resources>

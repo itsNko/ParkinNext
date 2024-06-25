@@ -1,5 +1,6 @@
 package com.example.parkingnext.ui
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -25,6 +27,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -43,12 +46,14 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.parkingnext.R
 import com.example.parkingnext.model.Car
 import com.example.parkingnext.model.ElectricCar
 import com.example.parkingnext.model.SpecialCar
-import com.example.parkingnext.model.StandardCar
 import com.example.parkingnext.ui.theme.ParkingNextTheme
+
+lateinit var viewModel: ParkingNextViewModel
 
 @Composable
 fun ReserveCar(
@@ -64,7 +69,8 @@ fun ReserveCar(
             end = 30.dp
         )
     ) {
-        val carList = listOf(StandardCar("Car1", "123ABC", "Seat Ibiza", R.color.GreenCar, 4.3f))
+        viewModel = viewModel()
+        val carList = viewModel.getUserCars()
 
         Scaffold(
             topBar = { ReserveTimeTopBar(backButtonOnClick) },
@@ -108,9 +114,15 @@ fun ReserveCarBody(
         item {
             AddCarButton(addCarOnClick)
         }
-
-        item {
-            CarCard(car = ElectricCar("Car1", "123ABC", "Seat Ibiza", R.color.PurpleCar, 4.3f))
+        viewModel.selectedCar = carList[0]
+        items(carList) { car ->
+            CarCard(
+                car = car,
+                isSelected = (viewModel.selectedCar == car),
+                onClick = {
+                    viewModel.selectedCar = car
+                }
+            )
         }
     }
 }
@@ -158,13 +170,25 @@ fun AddCarButton(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CarCard(
-    car: Car
+    car: Car,
+    isSelected: Boolean,
+    onClick: () -> Unit
 ) {
+    val borderStroke =
+        if(isSelected) {
+            BorderStroke(2.dp, colorResource(id = R.color.MainOrange))
+        } else {
+            null
+        }
+
     Card(
         colors = CardDefaults.cardColors(colorResource(id = R.color.LightBlue)),
         shape = RoundedCornerShape(15.dp),
+        border = borderStroke,
+        onClick = onClick,
         modifier = Modifier
             .aspectRatio(3f)
             .fillMaxWidth()
@@ -258,7 +282,7 @@ fun CarCard(
                             }
                         }
                     )
-                    Row() {
+                    Row {
                         Text(
                             text = stringResource(id = R.string.type),
                             fontWeight = FontWeight.SemiBold,
@@ -307,7 +331,7 @@ fun CarCard(
                     .fillMaxHeight()
                     .padding((dynamicSize / 20).dp)
             ) {
-                Row() {
+                Row {
                     Text(
                         text = stringResource(id = R.string.license_plate),
                         fontSize = (dynamicSize / 25).sp,
@@ -316,10 +340,11 @@ fun CarCard(
                     )
                     Card(
                         shape = RoundedCornerShape(dynamicSize / 20),
-                        modifier = Modifier.size(
-                            height = (dynamicSize / 10).dp,
-                            width = (dynamicSize / 4).dp
-                        )
+                        modifier = Modifier
+                            .size(
+                                height = (dynamicSize / 10).dp,
+                                width = (dynamicSize / 4).dp
+                            )
                             .padding(
                                 start = (dynamicSize / 40).dp
                             )
