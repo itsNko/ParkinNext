@@ -1,5 +1,13 @@
 package com.example.parkingnext.ui
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -15,14 +23,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Accessible
 import androidx.compose.material.icons.filled.ArrowBackIos
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.ArrowForwardIos
+import androidx.compose.material.icons.filled.ElectricCar
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
@@ -34,6 +42,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,25 +53,31 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.parkingnext.R
-import com.example.parkingnext.data.DAO
-import com.example.parkingnext.data.DummyDAO
+import com.example.parkingnext.model.ElectricSlot
+import com.example.parkingnext.model.Floor
+import com.example.parkingnext.model.Sector
+import com.example.parkingnext.model.ShortTimeSlot
 import com.example.parkingnext.model.Slot
+import com.example.parkingnext.model.SpecialSlot
+import com.example.parkingnext.model.StandardSlot
 import com.example.parkingnext.ui.theme.ParkingNextTheme
+import kotlinx.coroutines.delay
 
 @Composable
 fun ParkingSlots(
@@ -77,10 +92,9 @@ fun ParkingSlots(
             end = 30.dp
         )
 ) {
-    val dao: DAO = DummyDAO()
-    var slots = dao.getSlots(dao.getSectors(dao.getFloors()[0])[0])
-    var sectorAmount = 16
-    var availableSectorAmount = 8
+    val slots = viewModel.getSlots()
+    val sectorAmount = 16
+    val availableSectorAmount = 8
     Scaffold(
         topBar = { ParkingSlotsTopBar(backButtonOnClick, sectorAmount, availableSectorAmount) },
         bottomBar = { ParkingSlotsBottomBar(
@@ -131,7 +145,7 @@ fun ParkingSlotsTopBar(
                     append(availableSectorAmount.toString())
                 }
                 withStyle(style = SpanStyle(color = Color.Gray, fontSize = 16.sp)) {
-                    append(" / " + sectorAmount.toString())
+                    append(" / $sectorAmount")
                 }
             },
             textAlign = TextAlign.Right,
@@ -189,11 +203,24 @@ fun SlotSearcher(
     Column(
         modifier = modifier
     ) {
+        var rightAnimation by remember {
+            mutableStateOf(false)
+        }
         SectorAndFloorDropdown(Modifier.padding(top = 10.dp, bottom = 10.dp))
         SlotList(slots,
+            rightAnimation,
             modifier = Modifier.weight(1.0f))
         Spacer(modifier = Modifier.size(15.dp))
-        SectorBrowser()
+        SectorBrowser(
+            sectorLeftOnClick = {
+                rightAnimation = true
+                viewModel.goPreviousSector()
+            },
+            sectorRightOnClick = {
+                rightAnimation = false
+                viewModel.goNextSector()
+            }
+        )
         Spacer(modifier = Modifier.size(15.dp))
     }
 }
@@ -213,14 +240,14 @@ fun SectorAndFloorDropdown(modifier: Modifier = Modifier) {
             modifier = Modifier.fillMaxSize()
         ) {
             SlotDropDownMenu(
-                list = viewModel.getFloors(),
+                list = viewModel.getSectors(),
                 buttonBackgroundColor = Color.Transparent,
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxSize(),
             )
             SlotDropDownMenu(
-                list = viewModel.getSectors(),
+                list = viewModel.getFloors(),
                 buttonBackgroundColor = colorResource(id = R.color.MainOrange),
                 modifier = Modifier
                     .weight(1f)
@@ -232,7 +259,7 @@ fun SectorAndFloorDropdown(modifier: Modifier = Modifier) {
 
 @Composable
 fun SlotDropDownMenu(
-    list: List<kotlin.Any>,
+    list: List<Any>,
     buttonBackgroundColor: Color,
     modifier: Modifier
 ) {
@@ -245,7 +272,7 @@ fun SlotDropDownMenu(
 
     Button(
         onClick = {
-                  isExpanded = !isExpanded
+            isExpanded = !isExpanded
         },
         colors = ButtonDefaults.buttonColors(buttonBackgroundColor),
         shape = RoundedCornerShape(20),
@@ -253,11 +280,20 @@ fun SlotDropDownMenu(
             .fillMaxSize()
             .padding(2.dp)
     ) {
+        val dropDownText: String = if (list[0] is Sector) {
+            "${stringResource(id = R.string.sector)} " +
+                    "${viewModel.selectedSector?.sectorNumber.toString()}" +
+                    "/${viewModel.getSectors().size}"
+        } else {
+            "${stringResource(id = R.string.floor)} " +
+                    "${viewModel.selectedFloor?.floorNumber.toString()}" +
+                    "/${viewModel.getFloors().size}"
+        }
         Box(
             modifier = Modifier.fillMaxSize()
         ) {
             Text(
-                text = "Sector: 1/3",
+                text = dropDownText,
                 fontWeight = FontWeight.Normal,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.align(Alignment.Center)
@@ -277,25 +313,44 @@ fun SlotDropDownMenu(
         onDismissRequest = { isExpanded = false},
         modifier = Modifier.fillMaxWidth()
     ) {
-        LazyColumn (
+        Column (
             verticalArrangement = Arrangement.Center,
             modifier = Modifier.fillMaxWidth()
         )
         {
-            items(list) {item ->
+            var i = 1
+            var dropText: String
+            var onClick: () -> Unit
+            Divider()
+            list.forEach{
+                if (it is Floor) {
+                    dropText = "${stringResource(id = R.string.floor)} $i"
+                    onClick = {
+                        viewModel.selectedFloor = it
+                        isExpanded = !isExpanded
+                    }
+                }
+                else {
+                    dropText = "${stringResource(id = R.string.sector)} $i"
+                    onClick = {
+                        viewModel.selectedSector = it as? Sector
+                        isExpanded = !isExpanded
+                    }
+                }
                 DropdownMenuItem(
                     text = { Box(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text("Hello")
-                                } },
-                    onClick = { /* Handle click */ },
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(dropText)
+                    } },
+                    onClick = onClick,
                     modifier = Modifier
                         .fillMaxWidth()
                         .align(Alignment.CenterHorizontally)
                 )
                 Divider()
+                i++
             }
         }
     }
@@ -304,65 +359,167 @@ fun SlotDropDownMenu(
 @Composable
 fun SlotList(
     slots: List<Slot>,
+    turnRight: Boolean,
     modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier.padding(8.dp)
-    ) {
-        GradientDivider(
-            colors = listOf(Color.Transparent, Color.Gray, Color.Transparent),
-            thickness = 1.dp
-        )
-        repeat(slots.size / 2) { rowIndex ->
-            Row(modifier = Modifier.weight(1f)) {
-                /*Button(
-                    onClick = {}, modifier = Modifier
-                        .fillMaxSize()
-                        .weight(1f)
-                        .padding(8.dp)
-                ) {
-                    Text(
-                        text = slots[rowIndex * 2].number.toString()
-                    )
-                }*/
-                Surface(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxSize()
-                        .padding(4.dp),
-                    onClick = {}
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.car_r),
-                        contentDescription = null,
-                        contentScale = ContentScale.Fit,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
-                Divider(
-                    color = Color.Gray,
-                    modifier = Modifier
-                        .fillMaxHeight() //fill the max height
-                        .width(1.dp)
+
+    var currentSlots by remember { mutableStateOf(slots) }
+    var isVisible by remember { mutableStateOf(true) }
+
+    LaunchedEffect(slots) {
+        isVisible = false
+        delay(500) // Duration of the fade-out animation
+        currentSlots = slots
+        isVisible = true
+    }
+
+    val animDuration = 500
+    Box(modifier = modifier) {
+        AnimatedVisibility(
+            visible = isVisible,
+            enter =
+                slideInHorizontally(
+                    initialOffsetX = { fullWidth ->
+                        if(turnRight) -fullWidth else fullWidth},
+                    animationSpec = tween(durationMillis = animDuration)
+                ) + fadeIn(animationSpec = tween(durationMillis = animDuration))
+            ,
+            exit =
+                slideOutHorizontally(
+                    targetOffsetX = { fullWidth ->
+                        if(turnRight) fullWidth else -fullWidth
+                    },
+                    animationSpec = tween(durationMillis = animDuration - 100)
+                ) + fadeOut(animationSpec = tween(durationMillis = animDuration - 100))
+        ) {
+            Column(
+                modifier = modifier.padding(8.dp)
+            ) {
+                GradientDivider(
+                    colors = listOf(Color.Transparent, Color.Gray, Color.Transparent),
+                    thickness = 1.dp
                 )
-                Surface(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxSize()
-                        .padding(4.dp),
-                    onClick = {}
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.car_l),
-                        contentDescription = null,
-                        contentScale = ContentScale.Fit,
-                        modifier = Modifier.fillMaxSize()
+                var index = 0
+                for (i in 0..<slots.size / 2) {
+                    Row(modifier = Modifier.weight(1f)) {
+                        SlotCard(
+                            slot = currentSlots[index++],
+                            modifier = modifier
+                                .weight(1f)
+                                .fillMaxSize()
+                        )
+                        Divider(
+                            color = Color.Gray,
+                            modifier = Modifier
+                                .fillMaxHeight() //fill the max height
+                                .width(1.dp)
+                        )
+                        SlotCard(
+                            slot = currentSlots[index++],
+                            modifier = modifier
+                                .weight(1f)
+                                .fillMaxSize()
+                        )
+                    }
+                    GradientDivider(
+                        colors = listOf(Color.Transparent, Color.Gray, Color.Transparent),
+                        thickness = 1.dp
                     )
                 }
             }
-            GradientDivider(
-                colors = listOf(Color.Transparent, Color.Gray, Color.Transparent),
-                thickness = 1.dp
+        }
+    }
+}
+
+@Composable
+fun SlotCard(
+    slot: Slot,
+    modifier: Modifier
+) {
+    val isSelected = viewModel.selectedSlot == slot
+
+    val border = if(isSelected) BorderStroke(2.dp, colorResource(id = R.color.MainOrange)) else null
+    Surface(
+        modifier = modifier.padding(4.dp),
+        shape = RoundedCornerShape(10.dp),
+        border = border,
+        onClick = {
+            if(slot.isAvailable)
+                viewModel.selectedSlot = slot
+        }
+    ) {
+        if (!slot.isAvailable) {
+            val imageID =
+                if (slot.number % 2 == 0)
+                    R.drawable.car_l
+                else
+                    R.drawable.car_r
+            Image(
+                painter = painterResource(id = imageID),
+                contentDescription = null,
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.fillMaxSize()
             )
+        } else {
+            var slotNumberText = slot.number.toString()
+            if (slotNumberText.length == 1)
+                slotNumberText = "0$slotNumberText"
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                val icon  = when (slot) {
+                    is ElectricSlot -> {
+                        Icons.Filled.ElectricCar
+                    }
+
+                    is SpecialSlot -> {
+                        Icons.Filled.Accessible
+                    }
+
+                    else -> {
+                        ImageVector.vectorResource(id = R.drawable.min_15_icon)
+                    }
+                }
+
+                var cardColor  = when (slot) {
+                    is ElectricSlot -> {
+                        colorResource(id = R.color.ElectricSlot)
+                    }
+
+                    is SpecialSlot -> {
+                        colorResource(id = R.color.SpecialSlot)
+                    }
+
+                    is ShortTimeSlot -> {
+                        colorResource(id = R.color.ShortTimeSlot)
+                    }
+
+                    else -> {
+                        Color.Gray
+                    }
+                }
+
+                if(isSelected)
+                    cardColor = colorResource(id = R.color.MainOrange)
+
+                Text(
+                    text = slotNumberText,
+                    fontFamily = MaterialTheme.typography.headlineMedium.fontFamily,
+                    fontSize = 24.sp,
+                    color = cardColor,
+                )
+                if (slot !is StandardSlot) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = cardColor,
+                        modifier = Modifier
+                            .size(45.dp)
+                            .padding(5.dp)
+                    )
+                }
+            }
         }
     }
 }
@@ -432,12 +589,14 @@ fun GradientDivider(
 }
 
 @Preview(showBackground = true)
-//@Preview(name = "Standar", device = Devices.NEXUS_6P, showBackground = true, showSystemUi = false)
+//@Preview(name = "Standard", device = Devices.NEXUS_6P, showBackground = true, showSystemUi = false)
 //@Preview(name = "Small", device = Devices.PIXEL_4, showBackground = true, showSystemUi = false)
 //@Preview(name = "narrow", device = Devices.PIXEL_3, showBackground = true )
 @Composable
 fun GreetingPreview() {
     ParkingNextTheme {
-        ParkingSlots({},{})
+        val slot = ShortTimeSlot(8, 2.0f)
+        slot.isAvailable = true
+        SlotCard(slot = slot, modifier = Modifier.size(80.dp, 40.dp))
     }
 }

@@ -19,4 +19,7 @@
     <color name="PurpleCar">#AF87FF</color>
     <color name="BlueCar">#87E1FF</color>
     <color name="ElectriCar">#508D3B</color>
+    <color name="SpecialSlot">#3B618D</color>
+    <color name="ElectricSlot">#508D3B</color>
+    <color name="ShortTimeSlot">#C20C00</color>
 </resources>

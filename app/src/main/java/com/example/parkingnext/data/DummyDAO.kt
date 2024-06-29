@@ -14,6 +14,7 @@ import com.example.parkingnext.model.StandardCar
 import com.example.parkingnext.model.StandardSlot
 import com.example.parkingnext.model.User
 import android.icu.util.Calendar
+import com.example.parkingnext.model.ElectricSlot
 
 class DummyDAO : DAO {
     private val currentUser: User
@@ -33,22 +34,23 @@ class DummyDAO : DAO {
         for (i in 1..16)
             slots.add(StandardSlot(i, 0.15f))
 
-        var sector1 = Sector(slots)
+        var sector1 = Sector(1, slots)
 
         slots = mutableListOf<Slot>()
         for (i in 1..16) {
             val slot: Slot = when(i) {
                 1, 3, 5, 7, 9 -> SpecialSlot(i, 0.10f)    // Example of different types of cars
-                2, 4, 6, 8, 10 ->  StandardSlot(i, 0.15f)
+                11, 13, 15 -> ElectricSlot(i, 0.15f)
                 else -> ShortTimeSlot(i, 0.20f)
             }
             slots.add(slot)
         }
 
-        var sector2 = Sector(slots)
-        val floor: Floor = Floor(listOf(sector1, sector2))
+        var sector2 = Sector(2, slots)
+        val floor: Floor = Floor(1, listOf(sector1, sector2))
+        val floor2: Floor = Floor(2, listOf(sector1, sector2))
 
-        parking = Parking(listOf(floor, floor), listOf(currentUser))
+        parking = Parking(listOf(floor, floor2), listOf(currentUser))
     }
 
     override fun getFloors(): List<Floor> {

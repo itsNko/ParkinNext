@@ -18,6 +18,10 @@ val Poppins = FontFamily(
     Font(R.font.poppins_italic, FontWeight.Thin)
 )
 
+val Lato = FontFamily(
+    Font(R.font.lato_regular)
+)
+
 val Typography = Typography(
     displayLarge = TextStyle(
         fontFamily = Poppins,
@@ -36,6 +40,11 @@ val Typography = Typography(
     ),
     bodyLarge = TextStyle(
         fontFamily = Poppins,
+        fontWeight = FontWeight.Normal,
+        fontSize = 12.sp
+    ),
+    headlineMedium = TextStyle(
+        fontFamily = Lato,
         fontWeight = FontWeight.Normal,
         fontSize = 12.sp
     )

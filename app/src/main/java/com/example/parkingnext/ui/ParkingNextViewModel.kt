@@ -16,6 +16,7 @@ import android.icu.util.Calendar
 import com.example.parkingnext.model.Floor
 import com.example.parkingnext.model.ParkingTime
 import com.example.parkingnext.model.Sector
+import com.example.parkingnext.model.Slot
 
 class ParkingNextViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(ParkingNextUIState(""))
@@ -27,11 +28,13 @@ class ParkingNextViewModel : ViewModel() {
     var selectedDuration: ParkingTime by mutableStateOf(ParkingTime.MINUTES_15)
     var selectedFloor: Floor? by mutableStateOf(null)
     var selectedSector: Sector? by mutableStateOf(null)
+    var selectedSlot: Slot? by mutableStateOf(null)
 
     init {
         currentUser = dao.getUser("")
         selectedFloor = dao.getFloors()[0]
         selectedSector = dao.getSectors(selectedFloor!!)[0]
+        selectedSlot = dao.getSlots(selectedSector!!)[0]
     }
 
     /**
@@ -54,5 +57,37 @@ class ParkingNextViewModel : ViewModel() {
 
     fun getSectors(): List<Sector> {
         return dao.getSectors(selectedFloor!!)
+    }
+
+    fun getSlots(): List<Slot> {
+        val slots = dao.getSlots(selectedSector!!)
+        slots.map{
+            if(it.number in listOf(4, 5, 7, 8, 10, 11, 13, 14))
+                it.isAvailable = false
+            else
+                it
+        }
+
+        return slots
+    }
+
+    fun goNextSector() {
+        var currentI = selectedFloor?.sectors?.indexOf(selectedSector)
+        if (currentI == (selectedFloor?.sectors?.size?.minus(1)))
+            currentI = 0
+        else
+            currentI = currentI!! + 1
+
+        selectedSector = selectedFloor?.sectors?.get(currentI)
+    }
+
+    fun goPreviousSector() {
+        var currentI = selectedFloor?.sectors?.indexOf(selectedSector)
+        if (currentI == 0)
+            currentI = selectedFloor?.sectors?.size?.minus(1)
+        else
+            currentI = currentI!! - 1
+
+        selectedSector = currentI?.let { selectedFloor?.sectors?.get(it) }
     }
 }

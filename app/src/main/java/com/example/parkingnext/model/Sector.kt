@@ -1,4 +1,4 @@
 package com.example.parkingnext.model
 
-class Sector(var slots: List<Slot>) {
+class Sector(val sectorNumber: Int, var slots: List<Slot>) {
 }
