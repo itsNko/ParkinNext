@@ -6,6 +6,7 @@ import com.example.parkingnext.model.Sector
 import com.example.parkingnext.model.Slot
 import com.example.parkingnext.model.User
 import android.icu.util.Calendar
+import com.example.parkingnext.model.Reservation
 
 interface DAO {
 
@@ -42,4 +43,21 @@ interface DAO {
      * @return The current date of the parking
      */
     fun getCurrentDate(): Calendar
+
+    /**
+     * @param user The user from whom to get the reservation history
+     * @return The reservation history of a user.
+     */
+    fun getReservations(user: User): List<Reservation>
+
+    /**
+     * @param slot The slot from where to get the reservation
+     * @return The current reservations of a sector
+     */
+    fun getCurrentReservations(slot: Slot): List<Reservation>
+
+    /**
+     * Make a reservation: store it in the DB.
+     */
+    fun reserve(reservation: Reservation)
 }

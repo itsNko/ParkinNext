@@ -6,6 +6,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -23,7 +25,12 @@ import androidx.navigation.compose.rememberNavController
 import com.example.parkingnext.ui.ParkingNextViewModel
 import com.example.parkingnext.ui.Welcome
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.parkingnext.model.exceptions.InvalidDateException
+import com.example.parkingnext.model.exceptions.InvalidSlotException
+import com.example.parkingnext.model.exceptions.UserNotLoggedException
 import com.example.parkingnext.ui.AlertErrorDialog
+import com.example.parkingnext.ui.Home
+import com.example.parkingnext.ui.ReserveSummary
 
 private lateinit var viewModel: ParkingNextViewModel
 private lateinit var alertIcon: ImageVector
@@ -46,12 +53,14 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-enum class ParkingNextScreen() {
+enum class ParkingNextScreen {
     Welcome,
+    Home,
     ReserveCar,
     ReserveDate,
     ReserveTime,
     ParkingSlots,
+    ReserveSummary,
     Alert
 }
 
@@ -66,11 +75,21 @@ fun ParkingNextApp() {
         composable(route = ParkingNextScreen.Welcome.name) {
             Welcome(
                 loginButtonOnClick = {
-                    navController.navigate(ParkingNextScreen.ReserveCar.name)
+                    navController.navigate(ParkingNextScreen.Home.name)
                 },
                 registerButtonOnClick = {
-                    navController.navigate(ParkingNextScreen.ReserveCar.name)
+                    navController.navigate(ParkingNextScreen.Home.name)
                 }
+            )
+        }
+        composable(route = ParkingNextScreen.Home.name) {
+            Home(
+                reserveButtonOnClick = {
+                                       navController.navigate(ParkingNextScreen.ReserveCar.name)
+                },
+                historyOnClick = {},
+                settingsOnClick = {},
+                userButtonOnClick = {}
             )
         }
         composable(route = ParkingNextScreen.ReserveCar.name) {
@@ -120,6 +139,58 @@ fun ParkingNextApp() {
                     navController.navigateUp()
                 },
                 nextButtonOnClick = {
+                    navController.navigate(ParkingNextScreen.ReserveSummary.name)
+                }
+            )
+        }
+        composable(route = ParkingNextScreen.ReserveSummary.name) {
+            ReserveSummary(
+                backButtonOnClick = {
+                                    navController.navigateUp()
+                },
+                cancelOnClick = { navController.navigate(ParkingNextScreen.Home.name) },
+                reserveOnClick = {
+                    try {
+                        viewModel.reserve()
+                        alertIcon = Icons.Filled.Check
+                        alertTitle = "Successful Reservation!!"
+                        alertText = "Your reservation has been successfully done."
+                        alertDismiss = {}
+                        alertAccept = {
+                            navController.navigate(ParkingNextScreen.Home.name)
+                        }
+                    } catch (e: UserNotLoggedException) {
+                        alertIcon = Icons.Filled.Error
+                        alertTitle = "You are not logged in!"
+                        alertText = "You must be logged to reserve."
+                        alertDismiss = {
+                            navController.navigate(ParkingNextScreen.Home.name)
+                        }
+                        alertAccept = {
+                            navController.navigateUp()
+                        }
+                    } catch (e: InvalidSlotException) {
+                        alertIcon = Icons.Filled.Error
+                        alertTitle = "Invalid Slot"
+                        alertText = "Select an available slot or change the reservation time and duration."
+                        alertDismiss = {
+                            navController.navigate(ParkingNextScreen.Home.name)
+                        }
+                        alertAccept = {
+                            navController.navigateUp()
+                        }
+                    } catch (e: InvalidDateException) {
+                        alertIcon = Icons.Filled.Error
+                        alertTitle = "Invalid date"
+                        alertText = "You must select a beginning time after current time."
+                        alertDismiss = {
+                            navController.navigate(ParkingNextScreen.Home.name)
+                        }
+                        alertAccept = {
+                            navController.navigateUp()
+                        }
+                    }
+                    navController.navigate(ParkingNextScreen.Alert.name)
                 }
             )
         }

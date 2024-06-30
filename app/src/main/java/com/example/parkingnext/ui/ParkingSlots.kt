@@ -93,8 +93,8 @@ fun ParkingSlots(
         )
 ) {
     val slots = viewModel.getSlots()
-    val sectorAmount = 16
-    val availableSectorAmount = 8
+    val sectorAmount = viewModel.totalSlots
+    val availableSectorAmount = viewModel.availableSlots
     Scaffold(
         topBar = { ParkingSlotsTopBar(backButtonOnClick, sectorAmount, availableSectorAmount) },
         bottomBar = { ParkingSlotsBottomBar(

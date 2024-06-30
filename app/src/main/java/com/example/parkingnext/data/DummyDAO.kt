@@ -15,6 +15,9 @@ import com.example.parkingnext.model.StandardSlot
 import com.example.parkingnext.model.User
 import android.icu.util.Calendar
 import com.example.parkingnext.model.ElectricSlot
+import com.example.parkingnext.model.ParkingTime
+import com.example.parkingnext.model.Reservation
+import kotlin.collections.List
 
 class DummyDAO : DAO {
     private val currentUser: User
@@ -75,5 +78,28 @@ class DummyDAO : DAO {
     override fun getCurrentDate(): Calendar {
         val currentMilliseconds = System.currentTimeMillis()
         return Calendar.getInstance().apply {timeInMillis = currentMilliseconds}
+    }
+
+    override fun getReservations(user: User): List<Reservation> {
+        val result = listOf(
+            Reservation(currentUser, currentUser.cars[0], parking.floors[1], parking.floors[1].sectors[1], parking.floors[1].sectors[1].slots[3], Calendar.getInstance(), ParkingTime.HOURS_2),
+            Reservation(currentUser, currentUser.cars[1], parking.floors[0], parking.floors[0].sectors[1], parking.floors[0].sectors[1].slots[2], Calendar.getInstance(), ParkingTime.HOURS_2),
+            Reservation(currentUser, currentUser.cars[2], parking.floors[0], parking.floors[0].sectors[0], parking.floors[0].sectors[1].slots[4], Calendar.getInstance(), ParkingTime.HOURS_2)
+        )
+        return result
+    }
+
+    override fun getCurrentReservations(slot: Slot): List<Reservation> {
+        var result = mutableListOf<Reservation>()
+
+        /*
+        if(slot.number % 2 != 0)
+            result.add(Reservation(currentUser, currentUser.cars[0], parking.floors[1], parking.floors[1].sectors[1], slot, Calendar.getInstance().apply{timeInMillis = getCurrentDate().timeInMillis}, ParkingTime.HOURS_2))
+         */
+        return result
+    }
+
+    override fun reserve(reservation: Reservation) {
+
     }
 }

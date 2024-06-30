@@ -114,7 +114,6 @@ fun ReserveCarBody(
         item {
             AddCarButton(addCarOnClick)
         }
-        viewModel.selectedCar = carList[0]
         items(carList) { car ->
             CarCard(
                 car = car,
