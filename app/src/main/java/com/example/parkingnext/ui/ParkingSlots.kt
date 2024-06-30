@@ -77,6 +77,7 @@ import com.example.parkingnext.model.Slot
 import com.example.parkingnext.model.SpecialSlot
 import com.example.parkingnext.model.StandardSlot
 import com.example.parkingnext.ui.theme.ParkingNextTheme
+import com.example.parkingnext.viewModel
 import kotlinx.coroutines.delay
 
 @Composable

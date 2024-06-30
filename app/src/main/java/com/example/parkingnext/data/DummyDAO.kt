@@ -30,7 +30,7 @@ class DummyDAO : DAO {
             SpecialCar("Car3", "345CDE", "Audi A8", R.color.BlueCar, 4.3f)
         )
 
-        currentUser = User("id1", "user1", "123", cars)
+        currentUser = User("user1", "123", cars)
 
         var slots = mutableListOf<Slot>()
 

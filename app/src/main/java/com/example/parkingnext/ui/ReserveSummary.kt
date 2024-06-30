@@ -37,6 +37,7 @@ import androidx.compose.foundation.layout.size
 import com.example.parkingnext.model.Slot
 import com.example.parkingnext.model.SpecialSlot
 import com.example.parkingnext.model.StandardSlot
+import com.example.parkingnext.viewModel
 
 @Composable
 fun ReserveSummary(

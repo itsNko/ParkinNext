@@ -58,4 +58,10 @@
     <string name="slot">Slot:</string>
     <string name="price">Price</string>
     <string name="successful">Successful Reservation!!!</string>
+    <string name="create_account">Create Account</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="already_have_an_account">Already have an account?</string>
+    <string name="register_title">Create an account so you can explore all the\navailable slots.</string>
+    <string name="edit_reservation">Edit Reservation</string>
 </resources>

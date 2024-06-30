@@ -46,14 +46,12 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.parkingnext.R
 import com.example.parkingnext.model.Car
 import com.example.parkingnext.model.ElectricCar
 import com.example.parkingnext.model.SpecialCar
 import com.example.parkingnext.ui.theme.ParkingNextTheme
-
-lateinit var viewModel: ParkingNextViewModel
+import com.example.parkingnext.viewModel
 
 @Composable
 fun ReserveCar(
@@ -69,9 +67,7 @@ fun ReserveCar(
             end = 30.dp
         )
     ) {
-        viewModel = viewModel()
         val carList = viewModel.getUserCars()
-
         Scaffold(
             topBar = { ReserveTimeTopBar(backButtonOnClick) },
             bottomBar = { ParkingSlotsBottomBar(

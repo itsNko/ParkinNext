@@ -25,19 +25,29 @@ import androidx.navigation.compose.rememberNavController
 import com.example.parkingnext.ui.ParkingNextViewModel
 import com.example.parkingnext.ui.Welcome
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.parkingnext.model.exceptions.ConfirmPasswordException
+import com.example.parkingnext.model.exceptions.EmailAlreadyExistsException
+import com.example.parkingnext.model.exceptions.EmailFormatException
 import com.example.parkingnext.model.exceptions.InvalidDateException
 import com.example.parkingnext.model.exceptions.InvalidSlotException
+import com.example.parkingnext.model.exceptions.PasswordLengthException
 import com.example.parkingnext.model.exceptions.UserNotLoggedException
 import com.example.parkingnext.ui.AlertErrorDialog
 import com.example.parkingnext.ui.Home
+import com.example.parkingnext.ui.Login
+import com.example.parkingnext.ui.Register
 import com.example.parkingnext.ui.ReserveSummary
 
-private lateinit var viewModel: ParkingNextViewModel
+lateinit var viewModel: ParkingNextViewModel
 private lateinit var alertIcon: ImageVector
 private lateinit var alertTitle: String
 private lateinit var alertText: String
 private lateinit var alertDismiss: () -> Unit
 private lateinit var alertAccept: () -> Unit
+private var showLoginWarning = false
+private var loginWarningText = "Incorrect email or password."
+private var showRegisterWarning = false
+private var registerWarningText = ""
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,6 +65,8 @@ class MainActivity : ComponentActivity() {
 
 enum class ParkingNextScreen {
     Welcome,
+    Login,
+    Register,
     Home,
     ReserveCar,
     ReserveDate,
@@ -75,11 +87,79 @@ fun ParkingNextApp() {
         composable(route = ParkingNextScreen.Welcome.name) {
             Welcome(
                 loginButtonOnClick = {
-                    navController.navigate(ParkingNextScreen.Home.name)
+                    navController.navigate(ParkingNextScreen.Login.name)
                 },
                 registerButtonOnClick = {
-                    navController.navigate(ParkingNextScreen.Home.name)
+                    navController.navigate(ParkingNextScreen.Register.name)
                 }
+            )
+        }
+        composable(route = ParkingNextScreen.Register.name) {
+            Register(
+                signUp = {
+                    /*
+                    try{
+                        viewModel.register()
+                        showRegisterWarning = false
+                        navController.navigate(ParkingNextScreen.Home.name)
+                    } catch(e: ConfirmPasswordException) {
+                        showRegisterWarning = true
+                        registerWarningText = "Password and confirm password do not match."
+                        navController.navigate(ParkingNextScreen.Register.name)
+                    } catch(e: EmailFormatException) {
+                        showRegisterWarning = true
+                        registerWarningText = "Email format is incorrect."
+                        navController.navigate(ParkingNextScreen.Register.name)
+                    } catch(e: PasswordLengthException) {
+                        showRegisterWarning = true
+                        registerWarningText = "Password must have at least 8 characters."
+                        navController.navigate(ParkingNextScreen.Register.name)
+                    } catch(e: EmailAlreadyExistsException) {
+                        showRegisterWarning = true
+                        registerWarningText = "Email already is registered."
+                        navController.navigate(ParkingNextScreen.Register.name)
+                    }*/
+                         navController.navigate(ParkingNextScreen.Home.name)
+                },
+                login = {
+                    navController.navigate(ParkingNextScreen.Login.name)
+                },
+                googleSignUp = {
+
+                },
+                facebookSignUP = {
+
+                }
+            )
+        }
+        composable(route = ParkingNextScreen.Login.name) {
+            Login(
+                signIn = {
+                    /*
+                    try{
+                        viewModel.login()
+                        showLoginWarning = false
+                        navController.navigate(ParkingNextScreen.Home.name)
+                    } catch (e: Exception) {
+                        showLoginWarning = true
+                        navController.navigate(ParkingNextScreen.Login.name)
+                    }*/
+                         navController.navigate(ParkingNextScreen.Home.name)
+                },
+                register = {
+                    navController.navigate(ParkingNextScreen.Register.name)
+                },
+                forgotPassword = {
+
+                },
+                googleSignIn = {
+
+                },
+                facebookSignIn = {
+
+                },
+                showWarning = showLoginWarning,
+                warningText = loginWarningText
             )
         }
         composable(route = ParkingNextScreen.Home.name) {
@@ -89,7 +169,8 @@ fun ParkingNextApp() {
                 },
                 historyOnClick = {},
                 settingsOnClick = {},
-                userButtonOnClick = {}
+                userButtonOnClick = {},
+                addCar = {}
             )
         }
         composable(route = ParkingNextScreen.ReserveCar.name) {

@@ -22,4 +22,8 @@
     <color name="SpecialSlot">#3B618D</color>
     <color name="ElectricSlot">#508D3B</color>
     <color name="ShortTimeSlot">#C20C00</color>
+    <color name="LightRed">#FFB3B3</color>
+    <color name="DarkRed">#800000</color>
+    <color name="LighterGray">#D9D9D9</color>
+    <color name="StarGreen">#87E5A1</color>
 </resources>

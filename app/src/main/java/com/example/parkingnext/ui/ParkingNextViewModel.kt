@@ -13,6 +13,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import android.icu.util.Calendar
+import androidx.compose.runtime.remember
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
+import com.example.parkingnext.data.FirebaseDAO
 import com.example.parkingnext.model.ElectricCar
 import com.example.parkingnext.model.ElectricSlot
 import com.example.parkingnext.model.Floor
@@ -24,11 +29,21 @@ import com.example.parkingnext.model.Slot
 import com.example.parkingnext.model.SpecialCar
 import com.example.parkingnext.model.SpecialSlot
 import com.example.parkingnext.model.StandardCar
+import com.example.parkingnext.model.exceptions.ConfirmPasswordException
+import com.example.parkingnext.model.exceptions.EmailAlreadyExistsException
+import com.example.parkingnext.model.exceptions.EmailFormatException
 import com.example.parkingnext.model.exceptions.InvalidDateException
 import com.example.parkingnext.model.exceptions.InvalidSlotException
+import com.example.parkingnext.model.exceptions.LoginException
+import com.example.parkingnext.model.exceptions.PasswordLengthException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 
 class ParkingNextViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(ParkingNextUIState(""))
+    private val firebaseDAO = FirebaseDAO()
     val uiState: StateFlow<ParkingNextUIState> = _uiState.asStateFlow()
     private var currentUser: User? = null
     private var dao: DAO = DummyDAO()
@@ -41,13 +56,17 @@ class ParkingNextViewModel : ViewModel() {
     var selectedSlot: Slot? by mutableStateOf(null)
     var availableSlots: Int = 0
     var totalSlots: Int = 16
+    var email by mutableStateOf("")
+    var password by mutableStateOf("")
+    var confirmPassword by mutableStateOf("")
+    private val _registerResult = MutableLiveData<Result<User?>>()
+    val registerResult: LiveData<Result<User?>> = _registerResult
 
     init {
-        currentUser = dao.getUser("")
         selectedFloor = dao.getFloors()[0]
         selectedSector = dao.getSectors(selectedFloor!!)[0]
-        selectedCar = getUserCars()[0]
         selectAvailableSlot()
+        currentUser = dao.getUser("")
     }
 
     fun setDAO(newDAO: DAO) {
@@ -61,7 +80,10 @@ class ParkingNextViewModel : ViewModel() {
     fun getUserCars(): List<Car> {
         if (currentUser == null)
             throw UserNotLoggedException()
-        return dao.getCarsOfUser(currentUser!!)
+        val cars = dao.getCarsOfUser(currentUser!!)
+        if (selectedCar == null) // Only the first time
+            selectedCar = cars[0]
+        return cars
     }
 
     fun getCurrentDate(): Calendar {
@@ -95,8 +117,10 @@ class ParkingNextViewModel : ViewModel() {
             slot.isAvailable = isAvailable(reservations, startTime, endTime)
             if(((selectedCar is StandardCar || selectedCar is ElectricCar) && slot is SpecialSlot) ||
                 (selectedCar is StandardCar && slot is ElectricSlot) ||
-                (selectedDuration.name != ParkingTime.MINUTES_15.name && slot is ShortTimeSlot))
+                (selectedDuration.name != ParkingTime.MINUTES_15.name && slot is ShortTimeSlot)) {
                 slot.isAvailable = false
+                availableSlots--
+            }
         }
 
         return slots
@@ -186,5 +210,49 @@ class ParkingNextViewModel : ViewModel() {
                 dao.reserve(reservation)
             }
         }
+    }
+
+    fun login() {
+        viewModelScope.launch {
+            try {
+                currentUser = firebaseDAO.login(email, password)
+            } catch(e: Exception) {
+                throw LoginException()
+            }
+            if (currentUser == null)
+                throw LoginException()
+        }
+    }
+
+    fun register(email: String, password: String, confirmPassword: String) {
+        viewModelScope.launch {
+            try {
+                // Validate input
+                if (password != confirmPassword) throw ConfirmPasswordException()
+                if (!isValidEmail(email)) throw EmailFormatException()
+                if (password.length < 8) throw PasswordLengthException()
+
+                // Perform registration logic
+                val result = withContext(Dispatchers.IO) {
+                    firebaseDAO.register(email, password)
+                }
+
+                _registerResult.value = Result.success(result)
+            } catch (e: EmailAlreadyExistsException) {
+                _registerResult.value = Result.failure(e)
+            } catch (e: ConfirmPasswordException) {
+                _registerResult.value = Result.failure(e)
+            } catch (e: EmailFormatException) {
+                _registerResult.value = Result.failure(e)
+            } catch (e: PasswordLengthException) {
+                _registerResult.value = Result.failure(e)
+            } catch (e: Exception) {
+                _registerResult.value = Result.failure(e)
+            }
+        }
+    }
+
+    private fun isValidEmail(email: String): Boolean {
+        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
     }
 }
