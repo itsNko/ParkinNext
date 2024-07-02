@@ -1,63 +1,77 @@
 package com.example.parkingnext.data
 
-import com.example.parkingnext.model.Car
 import com.example.parkingnext.model.User
 import com.google.firebase.auth.FirebaseAuth
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 class FirebaseDAO {
-    val firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance()
+    private val firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance()
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    public suspend fun register(email: String, password: String): User? {
+    suspend fun register(email: String, password: String): User? {
         return suspendCancellableCoroutine { continuation ->
-            FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password)
+            val auth = FirebaseAuth.getInstance()
+
+            auth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
-                        // User registration successful
-                        val user = User(email, password, listOf<Car>())
-                        continuation.resume(user)
+                        val user = User(email, password, listOf())
+                        if (continuation.isActive) {
+                            continuation.resume(user)
+                        }
                     } else {
-                        // User registration failed
-                        continuation.resume(null)
+                        if (continuation.isActive) {
+                            continuation.resume(null)
+                        }
                     }
                 }
                 .addOnFailureListener { exception ->
-                    // User registration failed with an exception
-                    continuation.resumeWithException(exception)
+                    if (continuation.isActive) {
+                        continuation.resumeWithException(exception)
+                    }
                 }
+
+            continuation.invokeOnCancellation {
+                // Clean up resources if needed
+            }
         }
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    public suspend fun login(email: String, password: String): User? {
+    suspend fun login(email: String, password: String): User? {
         return suspendCancellableCoroutine { continuation ->
-            FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)
+            val auth = FirebaseAuth.getInstance()
+
+            auth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
-                        // User registration successful
-                        val user = User(email, password, listOf<Car>())
-                        continuation.resume(user)
+                        val user = User(email, password, listOf())
+                        if (continuation.isActive) {
+                            continuation.resume(user)
+                        }
                     } else {
-                        // User registration failed
-                        continuation.resume(null)
+                        if (continuation.isActive) {
+                            continuation.resume(null)
+                        }
                     }
                 }
                 .addOnFailureListener { exception ->
-                    // User registration failed with an exception
-                    continuation.resumeWithException(exception)
+                    if (continuation.isActive) {
+                        continuation.resumeWithException(exception)
+                    }
                 }
+
+            continuation.invokeOnCancellation {
+                // Clean up resources if needed
+            }
         }
     }
 
-    public fun getCurrentUser(): User? {
+    fun getCurrentUser(): User? {
         val currentUser = firebaseAuth.currentUser
         var result: User? = null
         if (currentUser != null)
-            result =  User(currentUser.email.toString(), "", listOf<Car>())
+            result =  User(currentUser.email.toString(), "", listOf())
 
         return result
     }

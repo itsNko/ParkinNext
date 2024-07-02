@@ -40,6 +40,8 @@ fun Register(
     login: () -> Unit,
     googleSignUp: () -> Unit,
     facebookSignUP: () -> Unit,
+    showWarning: Boolean,
+    warningText: String,
     modifier: Modifier = Modifier
         .padding(
             top = 50.dp,
@@ -71,7 +73,12 @@ fun Register(
             fontSize = 15.sp
         )
 
-        Spacer(Modifier.size(50.dp))
+        Spacer(Modifier.size(25.dp))
+
+        if (showWarning)
+            WarningBox(warningText = warningText)
+
+        Spacer(Modifier.size(25.dp))
 
         TextField(
             value = viewModel.email,
@@ -199,6 +206,6 @@ fun Register(
 @Composable
 fun RegisterPreview() {
     ParkingNextTheme {
-        Register({}, {}, {}, {})
+        Register({}, {}, {}, {}, false, "Template")
     }
 }

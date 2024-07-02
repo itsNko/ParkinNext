@@ -1,23 +1,15 @@
 package com.example.parkingnext.ui
 
+import android.icu.util.Calendar
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.parkingnext.data.DAO
 import com.example.parkingnext.data.DummyDAO
-import com.example.parkingnext.model.Car
-import com.example.parkingnext.model.User
-import com.example.parkingnext.model.exceptions.UserNotLoggedException
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import android.icu.util.Calendar
-import androidx.compose.runtime.remember
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.viewModelScope
 import com.example.parkingnext.data.FirebaseDAO
+import com.example.parkingnext.model.Car
 import com.example.parkingnext.model.ElectricCar
 import com.example.parkingnext.model.ElectricSlot
 import com.example.parkingnext.model.Floor
@@ -26,9 +18,9 @@ import com.example.parkingnext.model.Reservation
 import com.example.parkingnext.model.Sector
 import com.example.parkingnext.model.ShortTimeSlot
 import com.example.parkingnext.model.Slot
-import com.example.parkingnext.model.SpecialCar
 import com.example.parkingnext.model.SpecialSlot
 import com.example.parkingnext.model.StandardCar
+import com.example.parkingnext.model.User
 import com.example.parkingnext.model.exceptions.ConfirmPasswordException
 import com.example.parkingnext.model.exceptions.EmailAlreadyExistsException
 import com.example.parkingnext.model.exceptions.EmailFormatException
@@ -36,9 +28,12 @@ import com.example.parkingnext.model.exceptions.InvalidDateException
 import com.example.parkingnext.model.exceptions.InvalidSlotException
 import com.example.parkingnext.model.exceptions.LoginException
 import com.example.parkingnext.model.exceptions.PasswordLengthException
+import com.example.parkingnext.model.exceptions.UserNotLoggedException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
 class ParkingNextViewModel : ViewModel() {
@@ -59,8 +54,10 @@ class ParkingNextViewModel : ViewModel() {
     var email by mutableStateOf("")
     var password by mutableStateOf("")
     var confirmPassword by mutableStateOf("")
-    private val _registerResult = MutableLiveData<Result<User?>>()
-    val registerResult: LiveData<Result<User?>> = _registerResult
+    private val _loginResult = MutableStateFlow<Result<Boolean>?>(null)
+    val loginResult: StateFlow<Result<Boolean>?> = _loginResult
+    private val _registerResult = MutableStateFlow<Result<Boolean>?>(null)
+    val registerResult: StateFlow<Result<Boolean>?> = _registerResult
 
     init {
         selectedFloor = dao.getFloors()[0]
@@ -112,12 +109,13 @@ class ParkingNextViewModel : ViewModel() {
             // Assuming selectedPickUpTime and getPickUpTime() are properly initialized elsewhere
             val startTime = selectedPickUpTime
             val endTime = getPickUpTime()  // You need to define how you get the end time
-            if(isAvailable(reservations, startTime, endTime)) availableSlots++
+            if (isAvailable(reservations, startTime, endTime)) availableSlots++
             // Check availability
             slot.isAvailable = isAvailable(reservations, startTime, endTime)
-            if(((selectedCar is StandardCar || selectedCar is ElectricCar) && slot is SpecialSlot) ||
+            if (((selectedCar is StandardCar || selectedCar is ElectricCar) && slot is SpecialSlot) ||
                 (selectedCar is StandardCar && slot is ElectricSlot) ||
-                (selectedDuration.name != ParkingTime.MINUTES_15.name && slot is ShortTimeSlot)) {
+                (selectedDuration.name != ParkingTime.MINUTES_15.name && slot is ShortTimeSlot)
+            ) {
                 slot.isAvailable = false
                 availableSlots--
             }
@@ -127,7 +125,7 @@ class ParkingNextViewModel : ViewModel() {
     }
 
     private fun selectAvailableSlot() {
-        selectedSlot = getSlots().filter { slot -> slot.isAvailable  }[0]
+        selectedSlot = getSlots().filter { slot -> slot.isAvailable }[0]
     }
 
     /**
@@ -137,7 +135,12 @@ class ParkingNextViewModel : ViewModel() {
      * @param endTime The time the user wants to leave the slot.
      * @return Checks whether the slot is available in the time frame selected by the user.
      */
-    private fun isAvailable(targetTimeStart: Calendar, targetTimeEnd: Calendar, startTime: Calendar, endTime: Calendar): Boolean {
+    private fun isAvailable(
+        targetTimeStart: Calendar,
+        targetTimeEnd: Calendar,
+        startTime: Calendar,
+        endTime: Calendar
+    ): Boolean {
         return endTime.timeInMillis <= targetTimeStart.timeInMillis || startTime.timeInMillis >= targetTimeEnd.timeInMillis
     }
 
@@ -147,9 +150,17 @@ class ParkingNextViewModel : ViewModel() {
      * @param endTime The time the user wants to leave the slot.
      * @return Checks whether the slot is available in the time frame selected by the user.
      */
-    private fun isAvailable(reservations: List<Reservation>, startTime: Calendar, endTime: Calendar): Boolean {
+    private fun isAvailable(
+        reservations: List<Reservation>,
+        startTime: Calendar,
+        endTime: Calendar
+    ): Boolean {
         for (reservation in reservations) {
-            if (!(endTime.timeInMillis <= reservation.beginTime.timeInMillis || startTime.timeInMillis >= getPickUpTime(reservation.beginTime, reservation.duration).timeInMillis)) {
+            if (!(endTime.timeInMillis <= reservation.beginTime.timeInMillis || startTime.timeInMillis >= getPickUpTime(
+                    reservation.beginTime,
+                    reservation.duration
+                ).timeInMillis)
+            ) {
                 // If there is any overlap, the slot is not available
                 return false
             }
@@ -195,7 +206,12 @@ class ParkingNextViewModel : ViewModel() {
         val reservation: Reservation
         when {
             currentUser == null -> throw UserNotLoggedException()
-            !isAvailable(dao.getCurrentReservations(selectedSlot!!),selectedDay, getPickUpTime()) -> throw InvalidSlotException()
+            !isAvailable(
+                dao.getCurrentReservations(selectedSlot!!),
+                selectedDay,
+                getPickUpTime()
+            ) -> throw InvalidSlotException()
+
             (selectedDay.timeInMillis + 300000) < dao.getCurrentDate().timeInMillis -> throw InvalidDateException() // 30000 = 5 minutes of error
             else -> {
                 reservation = Reservation(
@@ -215,39 +231,41 @@ class ParkingNextViewModel : ViewModel() {
     fun login() {
         viewModelScope.launch {
             try {
-                currentUser = firebaseDAO.login(email, password)
-            } catch(e: Exception) {
-                throw LoginException()
+                currentUser = withContext(Dispatchers.IO) {
+                    firebaseDAO.login(email, password)
+                }
+                if (currentUser == null) {
+                    _loginResult.value = Result.failure(LoginException())
+                } else {
+                    _loginResult.value = Result.success(true)
+                }
+            } catch (e: Exception) {
+                _loginResult.value = Result.failure(LoginException())
             }
-            if (currentUser == null)
-                throw LoginException()
         }
     }
 
-    fun register(email: String, password: String, confirmPassword: String) {
+
+    fun register() {
         viewModelScope.launch {
             try {
-                // Validate input
-                if (password != confirmPassword) throw ConfirmPasswordException()
-                if (!isValidEmail(email)) throw EmailFormatException()
-                if (password.length < 8) throw PasswordLengthException()
-
-                // Perform registration logic
-                val result = withContext(Dispatchers.IO) {
-                    firebaseDAO.register(email, password)
+                when {
+                    password != confirmPassword -> _registerResult.value = Result.failure(ConfirmPasswordException())
+                    !isValidEmail(email) -> _registerResult.value = Result.failure(EmailFormatException())
+                    password.length < 8 -> _registerResult.value = Result.failure(PasswordLengthException())
+                    else -> {
+                        currentUser = withContext(Dispatchers.IO) {
+                            firebaseDAO.register(email, password)
+                        }
+                        if (currentUser == null) {
+                            _registerResult.value = Result.failure(EmailAlreadyExistsException())
+                        } else {
+                            _registerResult.value = Result.success(true)
+                        }
+                    }
                 }
-
-                _registerResult.value = Result.success(result)
-            } catch (e: EmailAlreadyExistsException) {
-                _registerResult.value = Result.failure(e)
-            } catch (e: ConfirmPasswordException) {
-                _registerResult.value = Result.failure(e)
-            } catch (e: EmailFormatException) {
-                _registerResult.value = Result.failure(e)
-            } catch (e: PasswordLengthException) {
-                _registerResult.value = Result.failure(e)
             } catch (e: Exception) {
-                _registerResult.value = Result.failure(e)
+                _registerResult.value = Result.failure(EmailAlreadyExistsException())
             }
         }
     }

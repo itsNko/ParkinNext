@@ -11,6 +11,11 @@ import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
@@ -44,10 +49,6 @@ private lateinit var alertTitle: String
 private lateinit var alertText: String
 private lateinit var alertDismiss: () -> Unit
 private lateinit var alertAccept: () -> Unit
-private var showLoginWarning = false
-private var loginWarningText = "Incorrect email or password."
-private var showRegisterWarning = false
-private var registerWarningText = ""
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -95,31 +96,16 @@ fun ParkingNextApp() {
             )
         }
         composable(route = ParkingNextScreen.Register.name) {
+            val registerResult by viewModel.registerResult.collectAsState()
+            var showRegisterWarning by remember {
+                mutableStateOf(false)
+            }
+            var registerWarningText by remember {
+                mutableStateOf("")
+            }
             Register(
                 signUp = {
-                    /*
-                    try{
-                        viewModel.register()
-                        showRegisterWarning = false
-                        navController.navigate(ParkingNextScreen.Home.name)
-                    } catch(e: ConfirmPasswordException) {
-                        showRegisterWarning = true
-                        registerWarningText = "Password and confirm password do not match."
-                        navController.navigate(ParkingNextScreen.Register.name)
-                    } catch(e: EmailFormatException) {
-                        showRegisterWarning = true
-                        registerWarningText = "Email format is incorrect."
-                        navController.navigate(ParkingNextScreen.Register.name)
-                    } catch(e: PasswordLengthException) {
-                        showRegisterWarning = true
-                        registerWarningText = "Password must have at least 8 characters."
-                        navController.navigate(ParkingNextScreen.Register.name)
-                    } catch(e: EmailAlreadyExistsException) {
-                        showRegisterWarning = true
-                        registerWarningText = "Email already is registered."
-                        navController.navigate(ParkingNextScreen.Register.name)
-                    }*/
-                         navController.navigate(ParkingNextScreen.Home.name)
+                         viewModel.register()
                 },
                 login = {
                     navController.navigate(ParkingNextScreen.Login.name)
@@ -129,22 +115,36 @@ fun ParkingNextApp() {
                 },
                 facebookSignUP = {
 
-                }
+                },
+                warningText = registerWarningText,
+                showWarning = showRegisterWarning
             )
+            registerResult?.let { result ->
+                result.onSuccess {
+                    showRegisterWarning = false
+                    navController.navigate(ParkingNextScreen.Home.name)
+                }.onFailure {exception ->
+                    registerWarningText = when (exception) {
+                        is ConfirmPasswordException -> "Password and confirm password do not match."
+                        is EmailFormatException -> "Email format is incorrect."
+                        is PasswordLengthException -> "Password must have at least 8 characters."
+                        is EmailAlreadyExistsException -> "Email already is registered."
+                        else -> "An unexpected error occurred"
+                    }
+                    showRegisterWarning = true
+                }
+            }
         }
         composable(route = ParkingNextScreen.Login.name) {
+            val loginResult by viewModel.loginResult.collectAsState()
+            var showLoginWarning by remember {
+                mutableStateOf(false)
+            }
+            val loginWarningText = "Incorrect email or password."
+
             Login(
                 signIn = {
-                    /*
-                    try{
-                        viewModel.login()
-                        showLoginWarning = false
-                        navController.navigate(ParkingNextScreen.Home.name)
-                    } catch (e: Exception) {
-                        showLoginWarning = true
-                        navController.navigate(ParkingNextScreen.Login.name)
-                    }*/
-                         navController.navigate(ParkingNextScreen.Home.name)
+                    viewModel.login()
                 },
                 register = {
                     navController.navigate(ParkingNextScreen.Register.name)
@@ -161,6 +161,15 @@ fun ParkingNextApp() {
                 showWarning = showLoginWarning,
                 warningText = loginWarningText
             )
+
+            loginResult?.let { result ->
+                result.onSuccess {
+                    showLoginWarning = false
+                    navController.navigate(ParkingNextScreen.Home.name)
+                }.onFailure {
+                    showLoginWarning = true
+                }
+            }
         }
         composable(route = ParkingNextScreen.Home.name) {
             Home(
